@@ -5,6 +5,8 @@ export interface PullRequest {
   ownerType: OwnerType;
   avatarUrl: string;
   repo: string;
+  /** Stargazer count of the repository when the PR was fetched. */
+  stars: number;
   number: number;
   title: string;
   url: string;
@@ -16,15 +18,7 @@ export interface PullRequest {
 export type RepoHeadings = "auto" | "always" | "never";
 export type GroupSort = "recent" | "count";
 
-export type Layout = "full" | "compact";
-
 export interface Config {
-  /** full: the card with featured PRs and groups. compact: one chip per owner. */
-  layout: Layout;
-  compact: {
-    /** Chips wrap to a new row past this width. */
-    maxWidth: number;
-  };
   title: string;
   /** "auto" or YYYY-MM-DD */
   since: string;
@@ -51,6 +45,7 @@ export interface Config {
 
 export interface ViewRepo {
   name: string;
+  stars: number;
   total: number;
   items: PullRequest[];
   hidden: number;

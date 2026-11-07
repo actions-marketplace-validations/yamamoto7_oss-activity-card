@@ -4,7 +4,7 @@ const API = "https://api.github.com/graphql";
 
 const PR_FIELDS = `
   number title url mergedAt additions deletions
-  repository { name isPrivate owner { __typename login avatarUrl(size: 80) } }
+  repository { name isPrivate stargazerCount owner { __typename login avatarUrl(size: 80) } }
 `;
 
 interface RawPr {
@@ -14,7 +14,7 @@ interface RawPr {
   mergedAt: string | null;
   additions: number;
   deletions: number;
-  repository: { name: string; isPrivate: boolean; owner: { __typename: string; login: string; avatarUrl: string } };
+  repository: { name: string; isPrivate: boolean; stargazerCount: number; owner: { __typename: string; login: string; avatarUrl: string } };
 }
 
 export class GitHubClient {
@@ -103,6 +103,7 @@ function toPullRequest(raw: RawPr, allowUnmerged = false): PullRequest | null {
     ownerType: (owner.__typename === "Organization" ? "Organization" : "User") as OwnerType,
     avatarUrl: owner.avatarUrl,
     repo: raw.repository.name,
+    stars: raw.repository.stargazerCount,
     number: raw.number,
     title: raw.title,
     url: raw.url,

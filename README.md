@@ -2,21 +2,14 @@
 
 A GitHub Action that shows the pull requests you've had merged into other people's projects as a card on your GitHub profile.
 
-PRs are grouped by owner (organization or user), and optionally by repository within each owner. You choose which owners come first, how many are shown, and which PRs are pinned at the top with a note.
+PRs are grouped by owner (organization or user) and then by repository, with each repository's star count. You choose which owners come first, how many are shown, and which PRs are pinned at the top with a note.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="examples/card-dark.svg">
   <img alt="Example card: featured PRs at the top, then merged PRs grouped by owner and repository" src="examples/card-light.svg" width="495">
 </picture>
 
-There is also a compact layout with one badge per owner:
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="examples/compact-dark.svg">
-  <img alt="Example compact layout: one badge per owner with its PR count" src="examples/compact-light.svg">
-</picture>
-
-<sub>Both examples use sample data.</sub>
+<sub>The example uses sample data.</sub>
 
 ## Setup
 
@@ -47,15 +40,11 @@ The workflow needs `contents: write` permission to commit the SVGs. The default 
 Every key is optional.
 
 ```yaml
-layout: full                          # or compact: one badge per owner
-compact:
-  max_width: 495                      # compact badges wrap to a new row past this width
-
 title: "{user}'s OSS Contributions"   # {user} becomes your username
 since: auto                           # or a date like 2024-01-01
 
 groups:
-  repos: false      # repo headings: false, true, or auto (only owners with 2+ repos)
+  repos: true       # repo headings with star counts: true, false, or auto (only owners with 2+ repos)
   sort: recent      # tie-breaker for equal priority: recent or count
   max_owners: 5     # null shows every owner
   max_prs: 2        # PRs per group (per repo when repo headings are shown)
@@ -87,9 +76,9 @@ exclude:
 - `priority.repos` also orders the repository headings within an owner. A negative value hides that repository.
 - Owners cut off by `max_owners` are shown in the footer under "Also contributed to", as badges with the avatar, name and number of PRs, in the same order. `groups.max_badges` limits how many badges are drawn, and the rest are summed up in a "+N more" badge. With `max_badges: 0`, the footer shows a one-line summary instead, such as "+8 more owners · 46 PRs".
 
-### Compact layout
+### Repository headings
 
-`layout: compact` draws one badge per owner, with the owner's avatar, name and number of merged PRs, and no frame around them. Owners are ordered and limited the same way as in the full card, using `priority`, `groups.sort`, `groups.max_owners`, `since` and `exclude`. Owners left out by `max_owners` are summed up in a final "+N more" badge. The title, featured section and repository headings are not shown, and featured PRs count toward their owner's badge.
+By default, PRs under each owner are grouped by repository, and each heading shows the repository's star count (for example ★ 23.4k), as of the last workflow run. With `repos: false`, PRs are listed directly under the owner as `owner/repo#123`. With `repos: auto`, headings are added only for owners with two or more repositories.
 
 ### Featured PRs
 

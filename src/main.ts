@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } fr
 import { dirname } from "node:path";
 import { ConfigError, DEFAULT_CONFIG, parseConfig } from "./config.ts";
 import { fetchAvatars, GitHubClient } from "./github.ts";
-import { renderCard, renderCompact, THEMES } from "./render.ts";
+import { renderCard, THEMES } from "./render.ts";
 import { buildView } from "./select.ts";
 import type { Config } from "./types.ts";
 
@@ -50,24 +50,21 @@ async function main() {
   console.log(`Found ${prs.length} merged pull requests by ${user} to other people's repositories.`);
 
   const known = new Set(prs.map((p) => `${p.owner}/${p.repo}#${p.number}`.toLowerCase()));
-  const compact = config.layout === "compact";
-  const missing = compact ? [] : config.featured.map((f) => f.pr).filter((ref) => !known.has(ref.toLowerCase()));
+  const missing = config.featured.map((f) => f.pr).filter((ref) => !known.has(ref.toLowerCase()));
   const featuredPrs = await gh.pullRequests(missing);
   for (const ref of missing) if (!featuredPrs.has(ref.toLowerCase())) warn(`Featured PR ${ref} was not found or is private; skipping it.`);
 
-  // The compact layout has no featured section, so featured PRs are counted in their owner's chip.
-  const view = buildView(prs, featuredPrs, compact ? { ...config, featured: [] } : config, user);
+  const view = buildView(prs, featuredPrs, config, user);
   const shown = [...view.featured.map((f) => f.pr), ...view.owners.flatMap((o) => o.items ?? o.repos?.flatMap((r) => r.items) ?? [])];
   const avatarUrls = [
     ...view.featured.map((f) => f.pr.avatarUrl),
     ...view.owners.map((o) => o.avatarUrl),
-    ...(compact ? [] : view.cutList.slice(0, view.maxBadges).map((o) => o.avatarUrl)),
+    ...view.cutList.slice(0, view.maxBadges).map((o) => o.avatarUrl),
   ];
   const avatars = await fetchAvatars(avatarUrls);
   console.log(`Card shows ${shown.length} PRs from ${view.owners.length} owners (${view.totalPrs} counted).`);
 
-  const render = (theme: (typeof THEMES)[keyof typeof THEMES]) =>
-    compact ? renderCompact(view, { theme, avatars }, config.compact.maxWidth) : renderCard(view, { theme, avatars });
+  const render = (theme: (typeof THEMES)[keyof typeof THEMES]) => renderCard(view, { theme, avatars });
   write(output, render(THEMES.light));
   setOutput("path", output);
   if (outputDark !== "none") {

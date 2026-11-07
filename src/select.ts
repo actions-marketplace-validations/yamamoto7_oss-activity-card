@@ -124,6 +124,7 @@ export function buildView(
     );
     const repos: ViewRepo[] = repoGroups.map((r) => ({
       name: r.name,
+      stars: r.prs[0]!.stars,
       total: r.prs.length,
       items: r.prs.slice(0, g.maxPrs),
       hidden: Math.max(0, r.prs.length - g.maxPrs),

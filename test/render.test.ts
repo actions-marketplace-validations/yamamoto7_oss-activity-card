@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { normalizeConfig } from "../src/config.ts";
-import { formatMonth, renderCard, renderCompact, THEMES } from "../src/render.ts";
+import { formatCount, formatMonth, renderCard, THEMES } from "../src/render.ts";
 import { buildView } from "../src/select.ts";
 import { textWidth, truncate, wrap } from "../src/text.ts";
 import { pr, SAMPLE } from "./fixtures.ts";
@@ -73,22 +73,14 @@ test("text helpers", () => {
   assert.ok(lines.every((l) => textWidth(l, 12.5) <= 120));
 });
 
-const compact = (raw: Record<string, unknown> = {}, maxWidth = 495) =>
-  renderCompact(buildView(SAMPLE, new Map(), normalizeConfig(raw), "me"), { theme: THEMES.light }, maxWidth);
-
-test("compact: one chip per owner with its PR count, plus a chip for the rest", () => {
-  const svg = compact({ groups: { max_owners: 3 } });
-  assert.equal((svg.match(/class="chip"/g) ?? []).length, 3);
-  assert.match(svg, />biomejs<tspan class="ccount" dx="7">5</);
-  assert.match(svg, /\+3 more</);
-  assert.doesNotMatch(svg, /NaN|undefined|Infinity/);
+test("repo headings show the repository's stars", () => {
+  const svg = render({ groups: { max_owners: 1 }, priority: { owners: { honojs: 1 } } });
+  assert.match(svg, />hono<tspan class="sub" dx="6">· 2 PRs</);
+  assert.match(svg, />23\.4k</);
+  assert.match(svg, />3\.1k</);
+  assert.doesNotMatch(render({ groups: { repos: false } }), />23\.4k</);
 });
 
-test("compact: chips wrap at max width and the SVG is only as wide as its rows", () => {
-  const w = (svg: string) => Number(/width="(\d+)"/.exec(svg)![1]);
-  const narrow = compact({ groups: { max_owners: null } }, 300);
-  const wide = compact({ groups: { max_owners: null } }, 2000);
-  assert.ok(w(narrow) <= 300);
-  assert.ok(height(narrow) > height(wide));
-  assert.equal(height(wide), 30, "one row");
+test("formatCount", () => {
+  assert.deepEqual([0, 950, 1000, 1234, 23456, 131000, 2_100_000].map(formatCount), ["0", "950", "1k", "1.2k", "23.5k", "131k", "2.1m"]);
 });

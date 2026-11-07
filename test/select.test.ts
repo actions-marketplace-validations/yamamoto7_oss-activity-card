@@ -38,8 +38,10 @@ test("negative repo priority hides that repo only", () => {
   assert.equal(biome.repos, undefined, "one repo left, so no headings in auto mode");
 });
 
-test("repo headings are off by default", () => {
-  assert.ok(view({ groups: { max_owners: null } }).owners.every((o) => !o.repos && o.items));
+test("repo headings are on by default, with the repo's stars", () => {
+  const owners = view({ groups: { max_owners: null } }).owners;
+  assert.ok(owners.every((o) => o.repos && !o.items));
+  assert.equal(owners.find((o) => o.login === "honojs")!.repos![0]!.stars, 23400);
 });
 
 test("repos: auto adds headings only when an owner has two or more repos", () => {

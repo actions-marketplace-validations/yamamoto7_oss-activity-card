@@ -5,17 +5,15 @@ import { ConfigError, DEFAULT_CONFIG, parseConfig } from "../src/config.ts";
 test("empty config gives defaults", () => {
   assert.deepEqual(parseConfig(""), DEFAULT_CONFIG);
   assert.deepEqual(parseConfig("# only comments\n"), DEFAULT_CONFIG);
-  assert.equal(parseConfig("groups: { max_prs: 3 }").groups.repos, "never");
+  assert.equal(parseConfig("groups: { max_prs: 3 }").groups.repos, "always");
 });
 
 test("parses a full config", () => {
   const c = parseConfig(`
-layout: compact
-compact: { max_width: 600 }
 title: "My OSS work"
 since: 2024-01-01
 groups:
-  repos: true
+  repos: auto
   sort: count
   max_owners: null
   max_prs: 3
@@ -30,11 +28,9 @@ featured:
   - honojs/hono#1
 exclude: [someorg, Foo/Bar#2]
 `);
-  assert.equal(c.layout, "compact");
-  assert.equal(c.compact.maxWidth, 600);
   assert.equal(c.title, "My OSS work");
   assert.equal(c.since, "2024-01-01");
-  assert.deepEqual(c.groups, { repos: "always", sort: "count", maxOwners: null, maxPrs: 3, maxBadges: 4 });
+  assert.deepEqual(c.groups, { repos: "auto", sort: "count", maxOwners: null, maxPrs: 3, maxBadges: 4 });
   assert.deepEqual(c.priority, { default: -1, owners: { biomejs: 10 }, repos: { "honojs/hono": 3 } });
   assert.deepEqual(c.featured, [{ pr: "biomejs/biome#4410", note: "Added an autofix" }, { pr: "honojs/hono#1" }]);
   assert.deepEqual(c.exclude, ["someorg", "foo/bar#2"]);
@@ -47,8 +43,7 @@ test("rejects bad values with a message naming the key", () => {
   assert.throws(() => parseConfig("priority: { repos: { hono: 1 } }"), /owner\/repo/);
   assert.throws(() => parseConfig("groups: { sort: stars }"), /groups.sort/);
   assert.throws(() => parseConfig("- a\n- b"), /YAML map/);
-  assert.throws(() => parseConfig("layout: grid"), /layout/);
-  assert.throws(() => parseConfig("compact: { max_width: 50 }"), /compact.max_width/);
+  assert.throws(() => parseConfig("groups: { repos: sometimes }"), /groups.repos/);
 });
 
 test("the example config in examples/ is valid", async () => {

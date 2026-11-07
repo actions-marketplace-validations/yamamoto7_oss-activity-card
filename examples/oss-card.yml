@@ -1,13 +1,6 @@
 # Put this file at .github/oss-card.yml in your profile repository (<you>/<you>).
 # Every key is optional. Values shown here are the defaults unless the comment says otherwise.
 
-# full: the card with featured PRs and grouped PR lists.
-# compact: one badge per owner (avatar, name, PR count). Ignores title, featured and repo headings.
-layout: full
-compact:
-  # Badges wrap to a new row past this width (pixels).
-  max_width: 495
-
 # Card heading. {user} becomes your GitHub username.
 title: "{user}'s OSS Contributions"
 
@@ -16,8 +9,8 @@ title: "{user}'s OSS Contributions"
 since: auto
 
 groups:
-  # Repo headings inside each owner: false, true, or auto (only when an owner has 2+ repos).
-  repos: false
+  # Repo headings (with star counts) inside each owner: true, false, or auto (only when an owner has 2+ repos).
+  repos: true
   # How owners (and repos) with the same priority are ordered: recent or count.
   sort: recent
   # How many owners to show. null shows all of them.

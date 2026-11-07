@@ -1,5 +1,12 @@
 import type { OwnerType, PullRequest } from "../src/types.ts";
 
+// Rough star counts for the sample repositories.
+const STARS: Record<string, number> = {
+  "honojs/hono": 23400, "honojs/middleware": 3100, "biomejs/biome": 17200, "biomejs/website": 120,
+  "sindresorhus/ky": 14800, "withastro/astro": 50100, "withastro/starlight": 6200,
+  "denoland/deno": 100000, "denoland/std": 3300,
+};
+
 let n = 1;
 export function pr(ref: string, mergedAt: string, extra: Partial<PullRequest> = {}): PullRequest {
   const m = /^([\w.-]+)\/([\w.-]+)(?:#(\d+))?$/.exec(ref)!;
@@ -10,6 +17,7 @@ export function pr(ref: string, mergedAt: string, extra: Partial<PullRequest> = 
     ownerType: (extra.ownerType ?? "Organization") as OwnerType,
     avatarUrl: `https://avatars.example/${owner}`,
     repo: m[2]!,
+    stars: STARS[`${owner}/${m[2]}`] ?? 131000,
     number,
     title: `Change ${ref}`,
     url: `https://github.com/${owner}/${m[2]}/pull/${number}`,

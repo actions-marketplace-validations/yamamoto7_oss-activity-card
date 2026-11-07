@@ -7371,11 +7371,9 @@ var ConfigError = class extends Error {
   name = "ConfigError";
 };
 var DEFAULT_CONFIG = {
-  layout: "full",
-  compact: { maxWidth: 495 },
   title: "{user}'s OSS Contributions",
   since: "auto",
-  groups: { repos: "never", sort: "recent", maxOwners: 5, maxPrs: 2, maxBadges: 12 },
+  groups: { repos: "always", sort: "recent", maxOwners: 5, maxPrs: 2, maxBadges: 12 },
   priority: { default: 0, owners: {}, repos: {} },
   featured: [],
   exclude: []
@@ -7423,17 +7421,6 @@ function parseConfig(text) {
 }
 function normalizeConfig(raw) {
   const c = structuredClone(DEFAULT_CONFIG);
-  const layout = raw.layout;
-  if (layout !== void 0 && layout !== null) {
-    if (layout !== "full" && layout !== "compact") throw new ConfigError(`layout must be full or compact (got ${JSON.stringify(layout)})`);
-    c.layout = layout;
-  }
-  const compact = raw.compact;
-  if (compact !== void 0 && compact !== null) {
-    if (!isObj(compact)) throw new ConfigError("compact must be a map");
-    const mw = pick(compact, "max_width", "maxWidth");
-    if (mw !== void 0) c.compact.maxWidth = int(mw, "compact.max_width", { min: 200 });
-  }
   const title = raw.title;
   if (title !== void 0) {
     if (typeof title !== "string") throw new ConfigError("title must be a string");
@@ -7498,7 +7485,7 @@ function normalizeConfig(raw) {
 var API = "https://api.github.com/graphql";
 var PR_FIELDS = `
   number title url mergedAt additions deletions
-  repository { name isPrivate owner { __typename login avatarUrl(size: 80) } }
+  repository { name isPrivate stargazerCount owner { __typename login avatarUrl(size: 80) } }
 `;
 var GitHubClient = class {
   token;
@@ -7578,6 +7565,7 @@ function toPullRequest(raw, allowUnmerged = false) {
     ownerType: owner.__typename === "Organization" ? "Organization" : "User",
     avatarUrl: owner.avatarUrl,
     repo: raw.repository.name,
+    stars: raw.repository.stargazerCount,
     number: raw.number,
     title: raw.title,
     url: raw.url,
@@ -7695,10 +7683,17 @@ var FONT = `-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Ar
 var ICON = {
   merge: "M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z",
   pin: "m11.294.984 3.722 3.722a1.75 1.75 0 0 1-.504 2.826l-1.327.613a3.089 3.089 0 0 0-1.707 2.084l-.584 2.454c-.317 1.332-1.972 1.8-2.94.832L5.75 11.311 1.78 15.28a.749.749 0 1 1-1.06-1.06l3.969-3.97-2.204-2.204c-.968-.968-.5-2.623.832-2.94l2.454-.584a3.08 3.08 0 0 0 2.084-1.707l.613-1.327a1.75 1.75 0 0 1 2.826-.504Z",
+  star: "M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z",
   repo: "M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"
 };
 var icon = (d, px, py, size, cls) => `<path class="${cls}" transform="translate(${px} ${py}) scale(${size / 16})" d="${d}"/>`;
 var plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+function formatCount(n) {
+  const fmt = (v, unit) => `${v >= 100 ? Math.round(v) : Math.round(v * 10) / 10}${unit}`;
+  if (n >= 1e6) return fmt(n / 1e6, "m");
+  if (n >= 1e3) return fmt(n / 1e3, "k");
+  return String(n);
+}
 var TILE_COLORS = ["#0969da", "#8250df", "#bf3989", "#cf222e", "#bc4c00", "#9a6700", "#1a7f37", "#1b7c83"];
 function tileColor(s) {
   let h = 0;
@@ -7789,7 +7784,13 @@ function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
       for (const r of o.repos) {
         out.push(trunk(y, y + 26, t1));
         out.push(icon(ICON.repo, PAD + 28, y + 7, 13, "mutedfill"));
-        out.push(`<text x="${PAD + 46}" y="${y + 19}" class="repo">${escapeXml(r.name)}<tspan class="sub" dx="6">\xB7 ${plural(r.total, "PR")}</tspan></text>`);
+        const stars = formatCount(r.stars);
+        const starsW = textWidth(stars, 12);
+        out.push(icon(ICON.star, W - PAD - starsW - 16, y + 8, 12, "mutedfill"));
+        out.push(`<text x="${W - PAD}" y="${y + 19}" class="sub" text-anchor="end">${stars}</text>`);
+        const prs = `\xB7 ${plural(r.total, "PR")}`;
+        const nameW = W - PAD - starsW - 28 - (PAD + 46) - textWidth(prs, 12) - 6;
+        out.push(`<text x="${PAD + 46}" y="${y + 19}" class="repo">${escapeXml(truncate(r.name, nameW, 13, true))}<tspan class="sub" dx="6">${prs}</tspan></text>`);
         y += 26;
         const t2 = PAD + 34.5;
         items(r.items, 48, (pr) => `#${pr.number}`, [t1, t2]);
@@ -7856,7 +7857,6 @@ function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
   ].join("\n");
 }
 var SMALL_CHIP = { height: 24, avatar: 16, font: 12 };
-var LARGE_CHIP = { height: 28, avatar: 20, font: 14 };
 function ownerChips(owners, rest, avatar, st) {
   const { height: h, avatar: a, font: f } = st;
   const pad = (h - a) / 2;
@@ -7906,41 +7906,6 @@ var chipCss = (t, st) => [
   `.chip{fill:${t.bg};stroke:${t.border}}`,
   `.chip.more{fill:none;stroke-dasharray:3 3}`
 ].join("");
-function renderCompact(view, { theme: t, avatars = /* @__PURE__ */ new Map() }, maxWidth = 495) {
-  const defs = [];
-  const avatar = avatarRenderer(defs, avatars);
-  const chips = ownerChips(view.owners, view.cutOwners, avatar, LARGE_CHIP);
-  const out = [];
-  let W2;
-  let H;
-  if (chips.length) {
-    const flowed = flow(chips, 1, 1, maxWidth - 2, 8);
-    out.push(...flowed.svg);
-    W2 = Math.ceil(flowed.right + 1);
-    H = Math.ceil(flowed.bottom + 1);
-  } else {
-    const label2 = "No merged pull requests to show yet.";
-    out.push(`<text x="1" y="19" class="cmore">${label2}</text>`);
-    W2 = Math.ceil(textWidth(label2, 13) + 2);
-    H = 28;
-  }
-  const css = [
-    `text{font-family:${FONT};fill:${t.fg}}`,
-    chipCss(t, LARGE_CHIP),
-    `.ini{fill:#fff;font-weight:700}`,
-    `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`
-  ].join("");
-  const label = `${view.title}: ${view.owners.map((o) => `${o.login} ${o.total}`).join(", ")}`;
-  return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W2}" height="${H}" viewBox="0 0 ${W2} ${H}" role="img" aria-labelledby="t">`,
-    `<title id="t">${escapeXml(label)}</title>`,
-    `<style>${css}</style>`,
-    `<defs>${defs.join("")}</defs>`,
-    ...out,
-    `</svg>`,
-    ""
-  ].join("\n");
-}
 
 // src/select.ts
 var prKey = (pr) => `${pr.owner}/${pr.repo}#${pr.number}`.toLowerCase();
@@ -8018,6 +7983,7 @@ function buildView(prs, featuredPrs, config, user) {
     );
     const repos = repoGroups.map((r) => ({
       name: r.name,
+      stars: r.prs[0].stars,
       total: r.prs.length,
       items: r.prs.slice(0, g.maxPrs),
       hidden: Math.max(0, r.prs.length - g.maxPrs)
@@ -8081,20 +8047,19 @@ async function main() {
   const prs = await gh.mergedPullRequests(user, config.since === "auto" ? void 0 : config.since);
   console.log(`Found ${prs.length} merged pull requests by ${user} to other people's repositories.`);
   const known = new Set(prs.map((p) => `${p.owner}/${p.repo}#${p.number}`.toLowerCase()));
-  const compact = config.layout === "compact";
-  const missing = compact ? [] : config.featured.map((f) => f.pr).filter((ref) => !known.has(ref.toLowerCase()));
+  const missing = config.featured.map((f) => f.pr).filter((ref) => !known.has(ref.toLowerCase()));
   const featuredPrs = await gh.pullRequests(missing);
   for (const ref of missing) if (!featuredPrs.has(ref.toLowerCase())) warn(`Featured PR ${ref} was not found or is private; skipping it.`);
-  const view = buildView(prs, featuredPrs, compact ? { ...config, featured: [] } : config, user);
+  const view = buildView(prs, featuredPrs, config, user);
   const shown = [...view.featured.map((f) => f.pr), ...view.owners.flatMap((o) => o.items ?? o.repos?.flatMap((r) => r.items) ?? [])];
   const avatarUrls = [
     ...view.featured.map((f) => f.pr.avatarUrl),
     ...view.owners.map((o) => o.avatarUrl),
-    ...compact ? [] : view.cutList.slice(0, view.maxBadges).map((o) => o.avatarUrl)
+    ...view.cutList.slice(0, view.maxBadges).map((o) => o.avatarUrl)
   ];
   const avatars = await fetchAvatars(avatarUrls);
   console.log(`Card shows ${shown.length} PRs from ${view.owners.length} owners (${view.totalPrs} counted).`);
-  const render = (theme) => compact ? renderCompact(view, { theme, avatars }, config.compact.maxWidth) : renderCard(view, { theme, avatars });
+  const render = (theme) => renderCard(view, { theme, avatars });
   write(output, render(THEMES.light));
   setOutput("path", output);
   if (outputDark !== "none") {
