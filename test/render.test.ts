@@ -97,13 +97,24 @@ test("slices cover the whole card, one link per band", () => {
   }
 
   const hrefs = slices.map((s) => s.href);
-  assert.match(hrefs[0]!, /^https:\/\/github\.com\/search\?q=is%3Apr%20is%3Amerged%20author%3Ame/);
   assert.ok(hrefs.includes("https://github.com/biomejs/biome/pull/4410"), "featured PR");
   assert.ok(hrefs.includes("https://github.com/honojs"), "owner");
   assert.ok(hrefs.includes("https://github.com/honojs/hono"), "repo");
   assert.ok(hrefs.includes("https://github.com/honojs/hono/pull/3521"), "PR");
-  assert.ok(hrefs.some((h) => h.includes(encodeURIComponent("repo:honojs/hono"))), "+N more searches that repo");
   assert.match(slices.find((s) => s.href === "https://github.com/honojs/hono")!.label, /23\.4k stars/);
+
+  // Only PR, repo and owner rows link anywhere.
+  assert.equal(hrefs[0], null, "header");
+  assert.equal(hrefs.at(-1), null, "footer");
+  const more = slices.find((s) => s.label.startsWith("1 more PR in honojs/hono"));
+  assert.ok(more && more.href === null, "+N more");
+  assert.ok(hrefs.every((h) => h === null || /^https:\/\/github\.com\/[\w.-]+(\/[\w.-]+(\/pull\/\d+)?)?$/.test(h)));
+});
+
+test("PR references are link-colored", () => {
+  const svg = render();
+  assert.match(svg, /<tspan class="ref">#3521<\/tspan>/);
+  assert.match(svg, /\.ref\{fill:#0969da\}/);
 });
 
 test("formatCount", () => {

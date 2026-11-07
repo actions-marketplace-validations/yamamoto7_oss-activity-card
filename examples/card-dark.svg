@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="495" height="849" viewBox="0 0 495 849" role="img" aria-labelledby="t">
 <title id="t">Example OSS Contributions: 15 merged PRs · 6 owners</title>
-<style>text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';fill:#e6edf3}.title{font-size:16px;font-weight:600;fill:#4493f8}.sub,.meta{font-size:12px;fill:#9198a1}.flabel{font-size:11px;font-weight:600;letter-spacing:.04em;fill:#d29922}.ftitle{font-size:14px;font-weight:600}.note{font-size:12.5px;opacity:.85}.ptitle{font-size:14px}.owner{font-size:14px;font-weight:600}.repo{font-size:13px;font-weight:600}.add{fill:#3fb950}.del{fill:#f85149}.merged{fill:#ab7df8}.star{fill:#d29922}.mutedfill{fill:#9198a1}.ini{fill:#fff;font-weight:700}.rule{stroke:#30363d;stroke-width:1}.ring{fill:none;stroke:#30363d;stroke-width:1;opacity:.6}.fbox{fill:#151b23;stroke:#30363d}.cname{font-size:12px}.ccount{font-weight:600;fill:#ab7df8}.cmore{font-size:11px;fill:#9198a1}.chip{fill:#0d1117;stroke:#30363d}.chip.more{fill:none;stroke-dasharray:3 3}</style>
+<style>text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';fill:#e6edf3}.title{font-size:16px;font-weight:600;fill:#4493f8}.sub,.meta{font-size:12px;fill:#9198a1}.flabel{font-size:11px;font-weight:600;letter-spacing:.04em;fill:#d29922}.ftitle{font-size:14px;font-weight:600}.note{font-size:12.5px;opacity:.85}.ptitle{font-size:14px}.owner{font-size:14px;font-weight:600}.repo{font-size:13px;font-weight:600}.add{fill:#3fb950}.del{fill:#f85149}.ref{fill:#4493f8}.merged{fill:#ab7df8}.star{fill:#d29922}.mutedfill{fill:#9198a1}.ini{fill:#fff;font-weight:700}.rule{stroke:#30363d;stroke-width:1}.ring{fill:none;stroke:#30363d;stroke-width:1;opacity:.6}.fbox{fill:#151b23;stroke:#30363d}.cname{font-size:12px}.ccount{font-weight:600;fill:#ab7df8}.cmore{font-size:11px;fill:#9198a1}.chip{fill:#0d1117;stroke:#30363d}.chip.more{fill:none;stroke-dasharray:3 3}</style>
 <defs><clipPath id="c0"><rect x="30" y="86" width="20" height="20" rx="5"/></clipPath><clipPath id="c1"><rect x="30" y="173" width="20" height="20" rx="5"/></clipPath><clipPath id="c2"><rect x="22" y="253" width="20" height="20" rx="5"/></clipPath><clipPath id="c3"><rect x="22" y="437" width="20" height="20" rx="5"/></clipPath><clipPath id="c4"><circle cx="32" cy="681" r="10"/></clipPath><clipPath id="c5"><rect x="26" y="811" width="16" height="16" rx="4"/></clipPath><clipPath id="c6"><rect x="136" y="811" width="16" height="16" rx="4"/></clipPath><clipPath id="c7"><rect x="226" y="811" width="16" height="16" rx="4"/></clipPath></defs>
 <rect x="0.5" y="0.5" width="494" height="848" rx="6" fill="#0d1117" stroke="#30363d"/>
 <rect x="16.5" y="50.5" width="462" height="184" rx="6" class="fbox"/>
@@ -12,12 +12,12 @@
 <text x="60" y="99" class="ftitle">feat(lint): add noUselessUndefinedInitialization autofix</text>
 <text x="60" y="116" class="note">Added an autofix that ESLint doesn&#39;t have. Listed in the v2.3</text>
 <text x="60" y="133" class="note">release notes.</text>
-<text x="60" y="150" class="meta">biomejs/biome#4410<tspan class="add" dx="8">+212</tspan><tspan class="del" dx="8">−9</tspan></text>
+<text x="60" y="150" class="meta"><tspan class="ref">biomejs/biome#4410</tspan><tspan class="add" dx="8">+212</tspan><tspan class="del" dx="8">−9</tspan></text>
 <line x1="30" x2="465" y1="163" y2="163" class="rule"/>
 <g clip-path="url(#c1)"><rect x="30" y="173" width="20" height="20" fill="#9a6700"/><text x="40" y="187" text-anchor="middle" class="ini" style="font-size:10px">D</text></g><rect x="30" y="173" width="20" height="20" rx="5" class="ring"/>
 <text x="60" y="186" class="ftitle">fix(ext/node): handle EPIPE in child_process stdin</text>
 <text x="60" y="203" class="note">Fixed a crash in the Node compatibility layer.</text>
-<text x="60" y="220" class="meta">denoland/deno#26015<tspan class="add" dx="8">+64</tspan><tspan class="del" dx="8">−20</tspan></text>
+<text x="60" y="220" class="meta"><tspan class="ref">denoland/deno#26015</tspan><tspan class="add" dx="8">+64</tspan><tspan class="del" dx="8">−20</tspan></text>
 <g clip-path="url(#c2)"><rect x="22" y="253" width="20" height="20" fill="#8250df"/><text x="32" y="267" text-anchor="middle" class="ini" style="font-size:10px">B</text></g><rect x="22" y="253" width="20" height="20" rx="5" class="ring"/>
 <text x="50" y="268" class="owner">biomejs</text>
 <text x="473" y="268" class="sub" text-anchor="end">3 PRs</text>
@@ -30,12 +30,12 @@
 <line x1="56.5" x2="56.5" y1="303" y2="351" class="rule"/>
 <path class="merged" transform="translate(70 311) scale(0.875)" d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z"/>
 <text x="94" y="323" class="ptitle">fix(css): handle nested @layer in noDuplicateSelectors</text>
-<text x="94" y="340" class="meta">#4302<tspan class="add" dx="8">+76</tspan><tspan class="del" dx="8">−21</tspan></text>
+<text x="94" y="340" class="meta"><tspan class="ref">#4302</tspan><tspan class="add" dx="8">+76</tspan><tspan class="del" dx="8">−21</tspan></text>
 <line x1="31.5" x2="31.5" y1="351" y2="399" class="rule"/>
 <line x1="56.5" x2="56.5" y1="351" y2="399" class="rule"/>
 <path class="merged" transform="translate(70 359) scale(0.875)" d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z"/>
 <text x="94" y="371" class="ptitle">docs: add migration guide from eslint-plugin-import</text>
-<text x="94" y="388" class="meta">#4120<tspan class="add" dx="8">+180</tspan><tspan class="del" dx="8">−0</tspan></text>
+<text x="94" y="388" class="meta"><tspan class="ref">#4120</tspan><tspan class="add" dx="8">+180</tspan><tspan class="del" dx="8">−0</tspan></text>
 <line x1="31.5" x2="31.5" y1="399" y2="423" class="rule"/>
 <line x1="56.5" x2="56.5" y1="399" y2="423" class="rule"/>
 <text x="94" y="415" class="meta">+1 more</text>
@@ -51,12 +51,12 @@
 <line x1="56.5" x2="56.5" y1="487" y2="535" class="rule"/>
 <path class="merged" transform="translate(70 495) scale(0.875)" d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z"/>
 <text x="94" y="507" class="ptitle">fix(jsx): preserve key order when streaming Suspense b…</text>
-<text x="94" y="524" class="meta">#3521<tspan class="add" dx="8">+48</tspan><tspan class="del" dx="8">−12</tspan></text>
+<text x="94" y="524" class="meta"><tspan class="ref">#3521</tspan><tspan class="add" dx="8">+48</tspan><tspan class="del" dx="8">−12</tspan></text>
 <line x1="31.5" x2="31.5" y1="535" y2="583" class="rule"/>
 <line x1="56.5" x2="56.5" y1="535" y2="583" class="rule"/>
 <path class="merged" transform="translate(70 543) scale(0.875)" d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z"/>
 <text x="94" y="555" class="ptitle">perf(router): skip regexp build for static-only routes</text>
-<text x="94" y="572" class="meta">#3402<tspan class="add" dx="8">+93</tspan><tspan class="del" dx="8">−40</tspan></text>
+<text x="94" y="572" class="meta"><tspan class="ref">#3402</tspan><tspan class="add" dx="8">+93</tspan><tspan class="del" dx="8">−40</tspan></text>
 <line x1="31.5" x2="31.5" y1="583" y2="609" class="rule"/>
 <path class="mutedfill" transform="translate(50 590) scale(0.8125)" d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/>
 <path class="mutedfill" transform="translate(432.76 591) scale(0.75)" d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/>
@@ -66,7 +66,7 @@
 <line x1="56.5" x2="56.5" y1="609" y2="657" class="rule"/>
 <path class="merged" transform="translate(70 617) scale(0.875)" d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z"/>
 <text x="94" y="629" class="ptitle">feat(zod-openapi): support hono/jsx response types</text>
-<text x="94" y="646" class="meta">#812<tspan class="add" dx="8">+41</tspan><tspan class="del" dx="8">−8</tspan></text>
+<text x="94" y="646" class="meta"><tspan class="ref">#812</tspan><tspan class="add" dx="8">+41</tspan><tspan class="del" dx="8">−8</tspan></text>
 <g clip-path="url(#c4)"><rect x="22" y="671" width="20" height="20" fill="#1b7c83"/><text x="32" y="685" text-anchor="middle" class="ini" style="font-size:10px">S</text></g><circle cx="32" cy="681" r="10" class="ring"/>
 <text x="50" y="686" class="owner">sindresorhus</text>
 <text x="473" y="686" class="sub" text-anchor="end">1 PR</text>
@@ -79,7 +79,7 @@
 <line x1="56.5" x2="56.5" y1="721" y2="769" class="rule"/>
 <path class="merged" transform="translate(70 729) scale(0.875)" d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z"/>
 <text x="94" y="741" class="ptitle">feat: add retry.jitter option</text>
-<text x="94" y="758" class="meta">#640<tspan class="add" dx="8">+57</tspan><tspan class="del" dx="8">−4</tspan></text>
+<text x="94" y="758" class="meta"><tspan class="ref">#640</tspan><tspan class="add" dx="8">+57</tspan><tspan class="del" dx="8">−4</tspan></text>
 <line x1="22" x2="473" y1="777" y2="777" class="rule"/>
 <text x="22" y="798" class="sub">Also contributed to</text>
 <text x="473" y="798" class="sub" text-anchor="end">Since Jul 2026</text>

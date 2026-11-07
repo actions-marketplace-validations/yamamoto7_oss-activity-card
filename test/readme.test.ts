@@ -18,6 +18,12 @@ test("block has one linked picture per slice, as a single HTML block", () => {
   assert.ok(block.startsWith("<div>") && block.endsWith("</div>"));
 });
 
+test("rows without a link are plain pictures", () => {
+  const block = readmeBlock([{ ...slices[0]!, href: null }, slices[1]!]);
+  assert.equal((block.match(/<a href=/g) ?? []).length, 1);
+  assert.match(block, /^<div>\n<picture>/);
+});
+
 test("replaces only what is between the markers, and is repeatable", () => {
   const readme = `# Hi\n\nintro\n\n${START}\nold\n${END}\n\nafter\n`;
   const once = replaceBlock(readme, "NEW")!;

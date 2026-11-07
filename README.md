@@ -30,15 +30,15 @@ The workflow needs `contents: write` permission to commit the card. The default 
 
 ### Linked card
 
-An image in a README can link to only one place, and links inside an SVG don't work there. So with the `readme` input, the card is also cut into one image per row (header, featured PR, owner, repository, PR, "+N more", footer), and each row is wrapped in its own link:
+An image in a README can link to only one place, and links inside an SVG don't work there. So with the `readme` input, the card is also cut into one image per row, and these rows are wrapped in links:
 
 | Row | Links to |
 | --- | --- |
-| Header and footer | Your merged PRs to other people's repositories (GitHub search) |
 | Featured PR, PR | The pull request |
-| Owner | The owner's GitHub page |
 | Repository | The repository |
-| +N more | Your merged PRs to that repository or owner (GitHub search) |
+| Owner | The owner's GitHub page |
+
+The header, "+N more" rows and footer have no link. PR numbers are drawn in GitHub's link color, since a README image can't change on hover.
 
 The rows are written to `oss-card/` and put between the two markers, replacing what was there. Each row has the PR title or name as its alt text and tooltip. The rows line up without gaps, so the card looks the same as the single image.
 

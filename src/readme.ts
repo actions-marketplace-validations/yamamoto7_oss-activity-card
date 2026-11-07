@@ -4,7 +4,8 @@ export const START = "<!-- oss-card:start -->";
 export const END = "<!-- oss-card:end -->";
 
 export interface LinkedSlice {
-  href: string;
+  /** null for rows without a link (header, "+N more", footer). */
+  href: string | null;
   label: string;
   height: number;
   /** Paths relative to the README. */
@@ -19,14 +20,15 @@ const WIDTH = 495;
  * Kept on consecutive lines with no blank line, so Markdown treats it as one HTML block.
  */
 export function readmeBlock(slices: LinkedSlice[]): string {
-  const rows = slices.map(
-    (s) =>
-      `<a href="${esc(s.href)}" title="${esc(s.label)}"><picture>` +
+  const rows = slices.map((s) => {
+    const picture =
+      `<picture>` +
       `<source media="(prefers-color-scheme: dark)" srcset="${esc(s.dark)}">` +
       // align="top" drops the space a line of text keeps below its baseline, so rows touch.
       `<img src="${esc(s.light)}" alt="${esc(s.label)}" width="${WIDTH}" height="${s.height}" align="top">` +
-      `</picture></a>`,
-  );
+      `</picture>`;
+    return s.href ? `<a href="${esc(s.href)}" title="${esc(s.label)}">${picture}</a>` : picture;
+  });
   return ["<div>", rows.join("<br>\n"), "</div>"].join("\n");
 }
 

@@ -104,7 +104,8 @@ function avatarRenderer(addDef: (def: string) => void, avatars: Map<string, stri
 export interface Segment {
   y0: number;
   y1: number;
-  href: string;
+  /** Only PR, repository and owner rows link somewhere. */
+  href: string | null;
   /** Alt text and tooltip for the band. */
   label: string;
   els: string[];
@@ -119,13 +120,11 @@ interface Layout {
   title: string;
 }
 
-const searchUrl = (q: string) => `https://github.com/search?q=${encodeURIComponent(q)}&type=pullrequests`;
-
 function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
   const segments: Segment[] = [];
   const backgrounds: Layout["backgrounds"] = [];
   let y = 0;
-  const start = (href: string, label: string) => {
+  const start = (href: string | null, label: string) => {
     const prev = segments.at(-1);
     if (prev) prev.y1 = y;
     segments.push({ y0: y, y1: y, href, label, els: [], defs: [] });
@@ -133,18 +132,18 @@ function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
   const current = () => segments.at(-1)!;
   const emit = (...els: string[]) => current().els.push(...els);
   const avatar = avatarRenderer((def) => current().defs.push(def), avatars);
-  const merged = `is:pr is:merged author:${view.user}`;
   const prLabel = (pr: PullRequest) => `${pr.owner}/${pr.repo}#${pr.number}: ${pr.title}`;
 
   const meta = (pr: PullRequest, label: string, mx: number, my: number) =>
-    `<text x="${mx}" y="${my}" class="meta">${x(label)}` +
+    // The PR reference is link-colored so linked rows read as clickable (hover effects can't work in a README image).
+    `<text x="${mx}" y="${my}" class="meta"><tspan class="ref">${x(label)}</tspan>` +
     `<tspan class="add" dx="8">+${pr.additions.toLocaleString("en-US")}</tspan>` +
     `<tspan class="del" dx="8">−${pr.deletions.toLocaleString("en-US")}</tspan></text>`;
 
   /* ---------- header ---------- */
   const sub = `${plural(view.totalPrs, "merged PR")} · ${plural(view.totalOwners, "owner")}`;
   const subW = textWidth(sub, 12);
-  start(searchUrl(`${merged} -user:${view.user}`), `${view.title}: ${sub}`);
+  start(null, `${view.title}: ${sub}`);
   emit(`<text x="${PAD}" y="34" class="title">${x(truncate(view.title, W - PAD * 2 - subW - 14, 16, true))}</text>`);
   emit(`<text x="${W - PAD}" y="34" class="sub" text-anchor="end">${x(sub)}</text>`);
   y = 50;
@@ -196,7 +195,7 @@ function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
   };
   const more = (n: number, indent: number, trunks: number[], scope: string) => {
     if (n <= 0) return;
-    start(searchUrl(`${merged} ${scope}`), `${plural(n, "more PR")} (${scope.replace(/^\w+:/, "")})`);
+    start(null, `${plural(n, "more PR")} in ${scope}`);
     // 24px tall: rows in a README must be at least one text line high to stack without gaps.
     for (const tx of trunks) emit(trunk(y, y + 24, tx));
     emit(`<text x="${PAD + indent + 24}" y="${y + 16}" class="meta">+${n} more</text>`);
@@ -227,11 +226,11 @@ function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
         y += 26;
         const t2 = PAD + 34.5;
         items(r.items, 48, (pr) => `#${pr.number}`, [t1, t2]);
-        more(r.hidden, 48, [t1, t2], `repo:${o.login}/${r.name}`);
+        more(r.hidden, 48, [t1, t2], `${o.login}/${r.name}`);
       }
     } else {
       items(o.items ?? [], 28, (pr) => `${pr.owner}/${pr.repo}#${pr.number}`, [t1]);
-      more(o.hidden, 28, [t1], `user:${o.login}`);
+      more(o.hidden, 28, [t1], o.login);
     }
     y += 4;
   });
@@ -246,7 +245,7 @@ function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
   if (view.cutOwners || view.since) {
     const others = view.cutList.map((o) => `${o.login} (${o.total})`).join(", ");
     const since = view.since ? `Since ${formatMonth(view.since)}` : "";
-    start(searchUrl(`${merged} -user:${view.user}`), [others && `Also contributed to ${others}`, since].filter(Boolean).join(". "));
+    start(null, [others && `Also contributed to ${others}`, since].filter(Boolean).join(". "));
     y += 4;
     emit(`<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" class="rule"/>`);
     if (view.cutOwners) {
@@ -279,7 +278,7 @@ function cardCss(t: Theme): string {
     `.ptitle{font-size:14px}`,
     `.owner{font-size:14px;font-weight:600}`,
     `.repo{font-size:13px;font-weight:600}`,
-    `.add{fill:${t.add}}.del{fill:${t.del}}`,
+    `.add{fill:${t.add}}.del{fill:${t.del}}.ref{fill:${t.title}}`,
     `.merged{fill:${t.merged}}.star{fill:${t.star}}.mutedfill{fill:${t.muted}}`,
     `.ini{fill:#fff;font-weight:700}`,
     `.rule{stroke:${t.border};stroke-width:1}`,
@@ -320,7 +319,7 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
 
 export interface Slice {
   svg: string;
-  href: string;
+  href: string | null;
   label: string;
   height: number;
 }
