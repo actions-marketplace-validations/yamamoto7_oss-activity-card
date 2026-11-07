@@ -4,6 +4,8 @@ import { ConfigError, DEFAULT_CONFIG, parseConfig } from "../src/config.ts";
 
 test("empty config gives defaults", () => {
   assert.deepEqual(parseConfig(""), DEFAULT_CONFIG);
+  assert.deepEqual(parseConfig("# only comments\n"), DEFAULT_CONFIG);
+  assert.equal(parseConfig("groups: { max_prs: 3 }").groups.repos, "never");
 });
 
 test("parses a full config", () => {

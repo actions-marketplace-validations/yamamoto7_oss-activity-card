@@ -32,14 +32,18 @@ test("default -1 shows only listed owners, plus repos listed on their own", () =
 });
 
 test("negative repo priority hides that repo only", () => {
-  const v = view({ priority: { repos: { "biomejs/website": -1 } }, groups: { max_owners: null } });
+  const v = view({ priority: { repos: { "biomejs/website": -1 } }, groups: { repos: "auto", max_owners: null } });
   const biome = v.owners.find((o) => o.login === "biomejs")!;
   assert.equal(biome.total, 4);
   assert.equal(biome.repos, undefined, "one repo left, so no headings in auto mode");
 });
 
+test("repo headings are off by default", () => {
+  assert.ok(view({ groups: { max_owners: null } }).owners.every((o) => !o.repos && o.items));
+});
+
 test("repos: auto adds headings only when an owner has two or more repos", () => {
-  const v = view({ groups: { max_owners: null } });
+  const v = view({ groups: { repos: "auto", max_owners: null } });
   const hono = v.owners.find((o) => o.login === "honojs")!;
   const single = v.owners.find((o) => o.login === "vercel")!;
   assert.deepEqual(hono.repos?.map((r) => r.name), ["hono", "middleware"]);
@@ -63,7 +67,7 @@ test("max_prs limits each group and counts the rest", () => {
 });
 
 test("repo priority orders repo headings", () => {
-  const v = view({ priority: { repos: { "honojs/middleware": 2 } } });
+  const v = view({ groups: { repos: "auto" }, priority: { repos: { "honojs/middleware": 2 } } });
   assert.deepEqual(v.owners.find((o) => o.login === "honojs")!.repos?.map((r) => r.name), ["middleware", "hono"]);
 });
 

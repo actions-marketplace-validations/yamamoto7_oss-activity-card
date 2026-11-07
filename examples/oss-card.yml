@@ -16,8 +16,8 @@ title: "{user}'s OSS Contributions"
 since: auto
 
 groups:
-  # Repo headings inside each owner: auto (only when an owner has 2+ repos), true, or false.
-  repos: auto
+  # Repo headings inside each owner: false, true, or auto (only when an owner has 2+ repos).
+  repos: false
   # How owners (and repos) with the same priority are ordered: recent or count.
   sort: recent
   # How many owners to show. null shows all of them.

@@ -7375,7 +7375,7 @@ var DEFAULT_CONFIG = {
   compact: { maxWidth: 495 },
   title: "{user}'s OSS Contributions",
   since: "auto",
-  groups: { repos: "auto", sort: "recent", maxOwners: 5, maxPrs: 2 },
+  groups: { repos: "never", sort: "recent", maxOwners: 5, maxPrs: 2 },
   priority: { default: 0, owners: {}, repos: {} },
   featured: [],
   exclude: []
@@ -7404,7 +7404,8 @@ function priorityMap(v, path, keyPattern, keyHint) {
   return out;
 }
 function repoHeadings(v) {
-  if (v === void 0 || v === null || v === "auto") return "auto";
+  if (v === void 0 || v === null) return DEFAULT_CONFIG.groups.repos;
+  if (v === "auto") return "auto";
   if (v === true || v === "always") return "always";
   if (v === false || v === "never") return "never";
   throw new ConfigError(`groups.repos must be auto, true or false (got ${JSON.stringify(v)})`);
@@ -7793,7 +7794,7 @@ function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
         more(r.hidden, 48, [t1, t2]);
       }
     } else {
-      items(o.items ?? [], 28, (pr) => `${pr.repo}#${pr.number}`, [t1]);
+      items(o.items ?? [], 28, (pr) => `${pr.owner}/${pr.repo}#${pr.number}`, [t1]);
       more(o.hidden, 28, [t1]);
     }
     y += 4;

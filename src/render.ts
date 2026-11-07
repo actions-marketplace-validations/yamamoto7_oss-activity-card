@@ -180,7 +180,7 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
         more(r.hidden, 48, [t1, t2]);
       }
     } else {
-      items(o.items ?? [], 28, (pr) => `${pr.repo}#${pr.number}`, [t1]);
+      items(o.items ?? [], 28, (pr) => `${pr.owner}/${pr.repo}#${pr.number}`, [t1]);
       more(o.hidden, 28, [t1]);
     }
     y += 4;

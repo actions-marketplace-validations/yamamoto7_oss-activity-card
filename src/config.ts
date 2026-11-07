@@ -10,7 +10,7 @@ export const DEFAULT_CONFIG: Config = {
   compact: { maxWidth: 495 },
   title: "{user}'s OSS Contributions",
   since: "auto",
-  groups: { repos: "auto", sort: "recent", maxOwners: 5, maxPrs: 2 },
+  groups: { repos: "never", sort: "recent", maxOwners: 5, maxPrs: 2 },
   priority: { default: 0, owners: {}, repos: {} },
   featured: [],
   exclude: [],
@@ -47,7 +47,8 @@ function priorityMap(v: unknown, path: string, keyPattern: RegExp, keyHint: stri
 }
 
 function repoHeadings(v: unknown): RepoHeadings {
-  if (v === undefined || v === null || v === "auto") return "auto";
+  if (v === undefined || v === null) return DEFAULT_CONFIG.groups.repos;
+  if (v === "auto") return "auto";
   if (v === true || v === "always") return "always";
   if (v === false || v === "never") return "never";
   throw new ConfigError(`groups.repos must be auto, true or false (got ${JSON.stringify(v)})`);

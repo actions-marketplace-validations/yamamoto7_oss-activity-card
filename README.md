@@ -2,7 +2,7 @@
 
 A GitHub Action that shows the pull requests you've had merged into other people's projects as a card on your GitHub profile.
 
-PRs are grouped by owner (organization or user) and, when an owner has several repositories, by repository. You choose which owners come first, how many are shown, and which PRs are pinned at the top with a note.
+PRs are grouped by owner (organization or user), and optionally by repository within each owner. You choose which owners come first, how many are shown, and which PRs are pinned at the top with a note.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="examples/card-dark.svg">
@@ -55,7 +55,7 @@ title: "{user}'s OSS Contributions"   # {user} becomes your username
 since: auto                           # or a date like 2024-01-01
 
 groups:
-  repos: auto       # repo headings: auto (owners with 2+ repos), true, false
+  repos: false      # repo headings: false, true, or auto (only owners with 2+ repos)
   sort: recent      # tie-breaker for equal priority: recent or count
   max_owners: 5     # null shows every owner
   max_prs: 2        # PRs per group (per repo when repo headings are shown)
