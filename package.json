@@ -1,0 +1,28 @@
+{
+  "name": "oss-activity-card",
+  "version": "0.1.0",
+  "description": "GitHub Action that renders your merged pull requests to other people's repositories as an SVG card for your profile README.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "yamamoto7",
+  "repository": "github:yamamoto7/oss-activity-card",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/index.js --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.ts",
+    "example": "node scripts/example.ts",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "esbuild": "0.25.12",
+    "typescript": "5.9.3"
+  }
+}

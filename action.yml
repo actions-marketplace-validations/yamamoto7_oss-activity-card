@@ -1,0 +1,33 @@
+name: OSS Activity Card
+description: Render your merged pull requests to other people's repositories as an SVG card for your GitHub profile README.
+author: yamamoto7
+branding:
+  icon: git-merge
+  color: purple
+
+inputs:
+  github-token:
+    description: Token used to search pull requests. The default workflow token can read public data.
+    default: ${{ github.token }}
+  user:
+    description: GitHub user whose pull requests are shown. Defaults to the owner of the repository running the workflow.
+    default: ${{ github.repository_owner }}
+  config:
+    description: Path to the card's config file. The defaults are used when the file doesn't exist.
+    default: .github/oss-card.yml
+  output:
+    description: Where to write the light-theme SVG.
+    default: oss-card.svg
+  output-dark:
+    description: Where to write the dark-theme SVG. Set to "none" to skip it.
+    default: oss-card-dark.svg
+
+outputs:
+  path:
+    description: Path of the light-theme SVG.
+  path-dark:
+    description: Path of the dark-theme SVG, unless output-dark is "none".
+
+runs:
+  using: node24
+  main: dist/index.js

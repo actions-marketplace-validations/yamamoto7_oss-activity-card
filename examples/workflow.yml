@@ -1,0 +1,28 @@
+# Put this file at .github/workflows/oss-card.yml in your profile repository (<you>/<you>).
+name: OSS activity card
+
+on:
+  schedule:
+    - cron: "17 0 * * *" # daily
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/oss-card.yml
+
+permissions:
+  contents: write
+
+jobs:
+  card:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: yamamoto7/oss-activity-card@v1
+
+      - name: Commit the card if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add oss-card.svg oss-card-dark.svg
+          git diff --cached --quiet || (git commit -m "Update OSS activity card" && git push)

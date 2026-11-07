@@ -1,0 +1,46 @@
+# Put this file at .github/oss-card.yml in your profile repository (<you>/<you>).
+# Every key is optional. Values shown here are the defaults unless the comment says otherwise.
+
+# Card heading. {user} becomes your GitHub username.
+title: "{user}'s OSS Contributions"
+
+# Count PRs merged on or after this date (YYYY-MM-DD). "auto" counts everything
+# and shows the month of your earliest PR in the footer.
+since: auto
+
+groups:
+  # Repo headings inside each owner: auto (only when an owner has 2+ repos), true, or false.
+  repos: auto
+  # How owners (and repos) with the same priority are ordered: recent or count.
+  sort: recent
+  # How many owners to show. null shows all of them.
+  max_owners: 5
+  # How many PRs to show per group (per repo when repo headings are shown).
+  max_prs: 2
+
+priority:
+  # Priority for owners not listed below. Set -1 to show only the owners and repos you list.
+  default: 0
+  # Higher numbers come first. Negative numbers hide the owner. (example values)
+  owners:
+    my-favorite-org: 10
+    another-org: 5
+    old-hackathon-team: -1
+  # Orders repo headings inside an owner. A repo listed here is shown even if its owner is hidden
+  # by default: -1. Negative numbers hide the repo. (example values)
+  repos:
+    another-org/main-repo: 3
+    my-favorite-org/website: -1
+
+# PRs to pin at the top, with an optional one-line note. They are always shown,
+# even if priority or since would hide them. (example values)
+featured:
+  - pr: my-favorite-org/core#1234
+    note: Rewrote the config loader; now used by every plugin.
+  - pr: another-org/main-repo#56
+
+# Leave out an owner, a repo, or a single PR. Your own repositories are never counted. (example values)
+exclude:
+  - some-org
+  - another-org/sandbox
+  - my-favorite-org/core#999
