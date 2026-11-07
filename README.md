@@ -37,9 +37,9 @@ An image in a README can link to only one place, and links inside an SVG don't w
 | Featured PR, PR | The pull request |
 | Repository | The repository |
 | Owner | The owner's GitHub page |
-| "Made with oss-activity-card" | This project (hide it with `credit: false`) |
+| Header, "Made with oss-activity-card" | This project. With `credit: false`, the credit line is removed and the header has no link. |
 
-The header, "+N more" rows and footer have no link. PR numbers are drawn in GitHub's link color, since a README image can't change on hover.
+The "+N more" rows and footer have no link. PR numbers are drawn in GitHub's link color, since a README image can't change on hover.
 
 The rows are written to `oss-card/` and put between the two markers, replacing what was there. Each row has the PR title or name as its alt text and tooltip. The rows line up without gaps, so the card looks the same as the single image.
 
@@ -47,13 +47,15 @@ The card is 495px wide. Where the README is narrower, such as on a phone, every 
 
 ### Single image
 
-The workflow also writes the whole card as `oss-card.svg` and `oss-card-dark.svg`. To use it without links, drop the `readme` input and add this to your README instead:
+The workflow also writes the whole card as `oss-card.svg` and `oss-card-dark.svg`. To use it as one image, drop the `readme` input and add this to your README instead. The image links to this project; change or remove the `<a>` if you like.
 
 ```html
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./oss-card-dark.svg">
-  <img alt="My OSS contributions" src="./oss-card.svg">
-</picture>
+<a href="https://github.com/yamamoto7/oss-activity-card">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./oss-card-dark.svg">
+    <img alt="My OSS contributions" src="./oss-card.svg" width="495">
+  </picture>
+</a>
 ```
 
 ## What is counted

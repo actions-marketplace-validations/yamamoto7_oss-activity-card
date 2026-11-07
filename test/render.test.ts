@@ -102,10 +102,11 @@ test("slices cover the whole card, one link per band", () => {
   assert.ok(hrefs.includes("https://github.com/honojs/hono/pull/3521"), "PR");
   assert.match(slices.find((s) => s.href === "https://github.com/honojs/hono")!.label, /23\.4k stars/);
 
-  // Only PR, repo and owner rows link anywhere, plus the credit line.
-  assert.equal(hrefs[0], null, "header");
+  // PR, repo and owner rows link to GitHub; the header and credit line link to this project.
+  const project = "https://github.com/yamamoto7/oss-activity-card";
+  assert.equal(hrefs[0], project, "header");
   assert.equal(hrefs.at(-2), null, "footer");
-  assert.equal(hrefs.at(-1), "https://github.com/yamamoto7/oss-activity-card", "credit");
+  assert.equal(hrefs.at(-1), project, "credit");
   const more = slices.find((s) => s.label.startsWith("1 more PR in honojs/hono"));
   assert.ok(more && more.href === null, "+N more");
   assert.ok(hrefs.every((h) => h === null || /^https:\/\/github\.com\/[\w.-]+(\/[\w.-]+(\/pull\/\d+)?)?$/.test(h)));
@@ -117,7 +118,9 @@ test("credit line at the bottom, unless credit: false", () => {
   assert.doesNotMatch(off, /Made with/);
   assert.equal(height(render()) - height(off), 12);
   const view = buildView(SAMPLE, new Map(), normalizeConfig({ credit: false }), "me");
-  assert.ok(!renderSlices(view, { theme: THEMES.light }).some((s) => s.href?.includes("oss-activity-card")));
+  const slices = renderSlices(view, { theme: THEMES.light });
+  assert.ok(!slices.some((s) => s.href?.includes("oss-activity-card")));
+  assert.equal(slices[0]!.href, null, "the header has no link either");
 });
 
 test("PR references are link-colored", () => {

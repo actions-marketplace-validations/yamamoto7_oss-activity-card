@@ -145,7 +145,8 @@ function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
   /* ---------- header ---------- */
   const sub = `${plural(view.totalPrs, "merged PR")} · ${plural(view.totalOwners, "owner")}`;
   const subW = textWidth(sub, 12);
-  start(null, `${view.title}: ${sub}`);
+  // The header links to this project too, unless credit: false.
+  start(view.credit ? PROJECT_URL : null, `${view.title}: ${sub}`);
   emit(`<text x="${PAD}" y="34" class="title">${x(truncate(view.title, W - PAD * 2 - subW - 14, 16, true))}</text>`);
   emit(`<text x="${W - PAD}" y="34" class="sub" text-anchor="end">${x(sub)}</text>`);
   y = 50;

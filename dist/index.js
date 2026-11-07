@@ -7761,7 +7761,7 @@ function layoutCard(view, avatars) {
   );
   const sub = `${plural(view.totalPrs, "merged PR")} \xB7 ${plural(view.totalOwners, "owner")}`;
   const subW = textWidth(sub, 12);
-  start(null, `${view.title}: ${sub}`);
+  start(view.credit ? PROJECT_URL : null, `${view.title}: ${sub}`);
   emit(`<text x="${PAD}" y="34" class="title">${escapeXml(truncate(view.title, W - PAD * 2 - subW - 14, 16, true))}</text>`);
   emit(`<text x="${W - PAD}" y="34" class="sub" text-anchor="end">${escapeXml(sub)}</text>`);
   y = 50;
