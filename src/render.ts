@@ -65,13 +65,16 @@ export function formatMonth(date: string): string {
   return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m! - 1]} ${y}`;
 }
 
-export function renderCard(view: CardView, { theme: t, avatars = new Map() }: RenderOptions): string {
-  const out: string[] = [];
-  const defs: string[] = [];
-  let clipId = 0;
-  let y = 0;
+interface AvatarOwner {
+  login: string;
+  type: string;
+  avatarUrl: string;
+}
 
-  const avatar = (owner: { login: string; type: string; avatarUrl: string }, ax: number, ay: number, size = 20) => {
+/** Draws an avatar clipped to GitHub's shapes: rounded square for organizations, circle for users. */
+function avatarRenderer(defs: string[], avatars: Map<string, string>) {
+  let clipId = 0;
+  return (owner: AvatarOwner, ax: number, ay: number, size = 20) => {
     const id = `c${clipId++}`;
     const shape =
       owner.type === "User"
@@ -83,9 +86,16 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
       ? `<image href="${data}" x="${ax}" y="${ay}" width="${size}" height="${size}" clip-path="url(#${id})"/>`
       : `<g clip-path="url(#${id})"><rect x="${ax}" y="${ay}" width="${size}" height="${size}" fill="${tileColor(owner.login)}"/>` +
         `<text x="${ax + size / 2}" y="${ay + size * 0.7}" text-anchor="middle" class="ini" style="font-size:${size * 0.5}px">${x((owner.login[0] ?? "?").toUpperCase())}</text></g>`;
-    const ring = shape.replace("/>", ` class="ring"/>`);
-    return fill + ring;
+    return fill + shape.replace("/>", ` class="ring"/>`);
   };
+}
+
+export function renderCard(view: CardView, { theme: t, avatars = new Map() }: RenderOptions): string {
+  const out: string[] = [];
+  const defs: string[] = [];
+  let y = 0;
+
+  const avatar = avatarRenderer(defs, avatars);
 
   const meta = (pr: PullRequest, label: string, mx: number, my: number) =>
     `<text x="${mx}" y="${my}" class="meta">${x(label)}` +
@@ -220,6 +230,75 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
     `<style>${css}</style>`,
     `<defs>${defs.join("")}</defs>`,
     `<rect x="0.5" y="0.5" width="${W - 1}" height="${H - 1}" rx="6" fill="${t.bg}" stroke="${t.border}"/>`,
+    ...out,
+    `</svg>`,
+    "",
+  ].join("\n");
+}
+
+/**
+ * One chip per owner (avatar, name, PR count), wrapping into rows. No frame or background,
+ * so it sits on the README like a row of badges.
+ */
+export function renderCompact(view: CardView, { theme: t, avatars = new Map() }: RenderOptions, maxWidth = 495): string {
+  const defs: string[] = [];
+  const avatar = avatarRenderer(defs, avatars);
+  const H = 28;
+  const GAP = 8;
+
+  const chips = view.owners.map((o) => {
+    const count = String(o.total);
+    const w = Math.ceil(4 + 20 + 8 + textWidth(o.login, 14) + 8 + textWidth(count, 14, true) + 12);
+    return { w, draw: (cx: number, cy: number) =>
+      `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip"/>` +
+      avatar(o, cx + 4, cy + 4) +
+      `<text x="${cx + 32}" y="${cy + 19}" class="name">${x(o.login)}<tspan class="count" dx="8">${count}</tspan></text>` };
+  });
+  if (view.cutOwners) {
+    const label = `+${view.cutOwners} more`;
+    const w = Math.ceil(12 + textWidth(label, 13) + 12);
+    chips.push({ w, draw: (cx, cy) =>
+      `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip more"/>` +
+      `<text x="${cx + 12}" y="${cy + 18.5}" class="morelabel">${label}</text>` });
+  }
+  if (!chips.length) {
+    const label = "No merged pull requests to show yet.";
+    chips.push({ w: Math.ceil(textWidth(label, 13)), draw: (cx, cy) => `<text x="${cx}" y="${cy + 18.5}" class="morelabel">${label}</text>` });
+  }
+
+  const out: string[] = [];
+  let cx = 1;
+  let cy = 1;
+  let width = 0;
+  for (const chip of chips) {
+    if (cx > 1 && cx + chip.w > maxWidth - 1) {
+      cx = 1;
+      cy += H + GAP;
+    }
+    out.push(chip.draw(cx, cy));
+    width = Math.max(width, cx + chip.w);
+    cx += chip.w + GAP;
+  }
+  const W = Math.ceil(width + 1);
+  const totalH = cy + H + 1;
+
+  const css = [
+    `text{font-family:${FONT};fill:${t.fg}}`,
+    `.name{font-size:14px}`,
+    `.count{font-weight:600;fill:${t.merged}}`,
+    `.morelabel{font-size:13px;fill:${t.muted}}`,
+    `.chip{fill:${t.bg};stroke:${t.border}}`,
+    `.chip.more{fill:none;stroke-dasharray:3 3}`,
+    `.ini{fill:#fff;font-weight:700}`,
+    `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`,
+  ].join("");
+  const label = `${view.title}: ${view.owners.map((o) => `${o.login} ${o.total}`).join(", ")}`;
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}" role="img" aria-labelledby="t">`,
+    `<title id="t">${x(label)}</title>`,
+    `<style>${css}</style>`,
+    `<defs>${defs.join("")}</defs>`,
     ...out,
     `</svg>`,
     "",

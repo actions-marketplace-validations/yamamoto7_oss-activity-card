@@ -9,7 +9,14 @@ PRs are grouped by owner (organization or user) and, when an owner has several r
   <img alt="Example card: featured PRs at the top, then merged PRs grouped by owner and repository" src="examples/card-light.svg" width="495">
 </picture>
 
-<sub>The card above uses sample data.</sub>
+There is also a compact layout with one badge per owner:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="examples/compact-dark.svg">
+  <img alt="Example compact layout: one badge per owner with its PR count" src="examples/compact-light.svg">
+</picture>
+
+<sub>Both examples use sample data.</sub>
 
 ## Setup
 
@@ -40,6 +47,10 @@ The workflow needs `contents: write` permission to commit the SVGs. The default 
 Every key is optional.
 
 ```yaml
+layout: full                          # or compact: one badge per owner
+compact:
+  max_width: 495                      # compact badges wrap to a new row past this width
+
 title: "{user}'s OSS Contributions"   # {user} becomes your username
 since: auto                           # or a date like 2024-01-01
 
@@ -74,6 +85,10 @@ exclude:
 - With `default: -1`, only the owners you list are shown. A repository listed under `priority.repos` with a priority of 0 or more is shown even when its owner isn't listed. For example, `some-org/one-repo: 1` shows that one repository without the rest of `some-org`.
 - `priority.repos` also orders the repository headings within an owner. A negative value hides that repository.
 - When owners are cut off by `max_owners`, the footer says how many owners and PRs were left out.
+
+### Compact layout
+
+`layout: compact` draws one badge per owner, with the owner's avatar, name and number of merged PRs, and no frame around them. Owners are ordered and limited the same way as in the full card, using `priority`, `groups.sort`, `groups.max_owners`, `since` and `exclude`. Owners left out by `max_owners` are summed up in a final "+N more" badge. The title, featured section and repository headings are not shown, and featured PRs count toward their owner's badge.
 
 ### Featured PRs
 

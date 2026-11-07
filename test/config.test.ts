@@ -8,6 +8,8 @@ test("empty config gives defaults", () => {
 
 test("parses a full config", () => {
   const c = parseConfig(`
+layout: compact
+compact: { max_width: 600 }
 title: "My OSS work"
 since: 2024-01-01
 groups:
@@ -25,6 +27,8 @@ featured:
   - honojs/hono#1
 exclude: [someorg, Foo/Bar#2]
 `);
+  assert.equal(c.layout, "compact");
+  assert.equal(c.compact.maxWidth, 600);
   assert.equal(c.title, "My OSS work");
   assert.equal(c.since, "2024-01-01");
   assert.deepEqual(c.groups, { repos: "always", sort: "count", maxOwners: null, maxPrs: 3 });
@@ -40,6 +44,8 @@ test("rejects bad values with a message naming the key", () => {
   assert.throws(() => parseConfig("priority: { repos: { hono: 1 } }"), /owner\/repo/);
   assert.throws(() => parseConfig("groups: { sort: stars }"), /groups.sort/);
   assert.throws(() => parseConfig("- a\n- b"), /YAML map/);
+  assert.throws(() => parseConfig("layout: grid"), /layout/);
+  assert.throws(() => parseConfig("compact: { max_width: 50 }"), /compact.max_width/);
 });
 
 test("the example config in examples/ is valid", async () => {

@@ -1,11 +1,13 @@
 import { parse } from "yaml";
-import type { Config, GroupSort, RepoHeadings } from "./types.ts";
+import type { Config, GroupSort, Layout, RepoHeadings } from "./types.ts";
 
 export class ConfigError extends Error {
   override name = "ConfigError";
 }
 
 export const DEFAULT_CONFIG: Config = {
+  layout: "full",
+  compact: { maxWidth: 495 },
   title: "{user}'s OSS Contributions",
   since: "auto",
   groups: { repos: "auto", sort: "recent", maxOwners: 5, maxPrs: 2 },
@@ -65,6 +67,19 @@ export function parseConfig(text: string): Config {
 
 export function normalizeConfig(raw: Obj): Config {
   const c = structuredClone(DEFAULT_CONFIG);
+
+  const layout = raw.layout;
+  if (layout !== undefined && layout !== null) {
+    if (layout !== "full" && layout !== "compact") throw new ConfigError(`layout must be full or compact (got ${JSON.stringify(layout)})`);
+    c.layout = layout as Layout;
+  }
+
+  const compact = raw.compact;
+  if (compact !== undefined && compact !== null) {
+    if (!isObj(compact)) throw new ConfigError("compact must be a map");
+    const mw = pick(compact, "max_width", "maxWidth");
+    if (mw !== undefined) c.compact.maxWidth = int(mw, "compact.max_width", { min: 200 });
+  }
 
   const title = raw.title;
   if (title !== undefined) {

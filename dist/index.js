@@ -7371,6 +7371,8 @@ var ConfigError = class extends Error {
   name = "ConfigError";
 };
 var DEFAULT_CONFIG = {
+  layout: "full",
+  compact: { maxWidth: 495 },
   title: "{user}'s OSS Contributions",
   since: "auto",
   groups: { repos: "auto", sort: "recent", maxOwners: 5, maxPrs: 2 },
@@ -7420,6 +7422,17 @@ function parseConfig(text) {
 }
 function normalizeConfig(raw) {
   const c = structuredClone(DEFAULT_CONFIG);
+  const layout = raw.layout;
+  if (layout !== void 0 && layout !== null) {
+    if (layout !== "full" && layout !== "compact") throw new ConfigError(`layout must be full or compact (got ${JSON.stringify(layout)})`);
+    c.layout = layout;
+  }
+  const compact = raw.compact;
+  if (compact !== void 0 && compact !== null) {
+    if (!isObj(compact)) throw new ConfigError("compact must be a map");
+    const mw = pick(compact, "max_width", "maxWidth");
+    if (mw !== void 0) c.compact.maxWidth = int(mw, "compact.max_width", { min: 200 });
+  }
   const title = raw.title;
   if (title !== void 0) {
     if (typeof title !== "string") throw new ConfigError("title must be a string");
@@ -7693,20 +7706,22 @@ function formatMonth(date) {
   const [y, m] = date.split("-").map(Number);
   return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m - 1]} ${y}`;
 }
-function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
-  const out = [];
-  const defs = [];
+function avatarRenderer(defs, avatars) {
   let clipId = 0;
-  let y = 0;
-  const avatar = (owner, ax, ay, size = 20) => {
+  return (owner, ax, ay, size = 20) => {
     const id = `c${clipId++}`;
     const shape = owner.type === "User" ? `<circle cx="${ax + size / 2}" cy="${ay + size / 2}" r="${size / 2}"/>` : `<rect x="${ax}" y="${ay}" width="${size}" height="${size}" rx="${size / 4}"/>`;
     defs.push(`<clipPath id="${id}">${shape}</clipPath>`);
     const data = avatars.get(owner.avatarUrl);
     const fill = data ? `<image href="${data}" x="${ax}" y="${ay}" width="${size}" height="${size}" clip-path="url(#${id})"/>` : `<g clip-path="url(#${id})"><rect x="${ax}" y="${ay}" width="${size}" height="${size}" fill="${tileColor(owner.login)}"/><text x="${ax + size / 2}" y="${ay + size * 0.7}" text-anchor="middle" class="ini" style="font-size:${size * 0.5}px">${escapeXml((owner.login[0] ?? "?").toUpperCase())}</text></g>`;
-    const ring = shape.replace("/>", ` class="ring"/>`);
-    return fill + ring;
+    return fill + shape.replace("/>", ` class="ring"/>`);
   };
+}
+function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
+  const out = [];
+  const defs = [];
+  let y = 0;
+  const avatar = avatarRenderer(defs, avatars);
   const meta = (pr, label, mx, my) => `<text x="${mx}" y="${my}" class="meta">${escapeXml(label)}<tspan class="add" dx="8">+${pr.additions.toLocaleString("en-US")}</tspan><tspan class="del" dx="8">\u2212${pr.deletions.toLocaleString("en-US")}</tspan></text>`;
   const sub = `${plural(view.totalPrs, "merged PR")} \xB7 ${plural(view.totalOwners, "owner")}`;
   const subW = textWidth(sub, 12);
@@ -7823,6 +7838,61 @@ function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
     `<style>${css}</style>`,
     `<defs>${defs.join("")}</defs>`,
     `<rect x="0.5" y="0.5" width="${W - 1}" height="${H - 1}" rx="6" fill="${t.bg}" stroke="${t.border}"/>`,
+    ...out,
+    `</svg>`,
+    ""
+  ].join("\n");
+}
+function renderCompact(view, { theme: t, avatars = /* @__PURE__ */ new Map() }, maxWidth = 495) {
+  const defs = [];
+  const avatar = avatarRenderer(defs, avatars);
+  const H = 28;
+  const GAP = 8;
+  const chips = view.owners.map((o) => {
+    const count = String(o.total);
+    const w = Math.ceil(4 + 20 + 8 + textWidth(o.login, 14) + 8 + textWidth(count, 14, true) + 12);
+    return { w, draw: (cx2, cy2) => `<rect x="${cx2 + 0.5}" y="${cy2 + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip"/>` + avatar(o, cx2 + 4, cy2 + 4) + `<text x="${cx2 + 32}" y="${cy2 + 19}" class="name">${escapeXml(o.login)}<tspan class="count" dx="8">${count}</tspan></text>` };
+  });
+  if (view.cutOwners) {
+    const label2 = `+${view.cutOwners} more`;
+    const w = Math.ceil(12 + textWidth(label2, 13) + 12);
+    chips.push({ w, draw: (cx2, cy2) => `<rect x="${cx2 + 0.5}" y="${cy2 + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip more"/><text x="${cx2 + 12}" y="${cy2 + 18.5}" class="morelabel">${label2}</text>` });
+  }
+  if (!chips.length) {
+    const label2 = "No merged pull requests to show yet.";
+    chips.push({ w: Math.ceil(textWidth(label2, 13)), draw: (cx2, cy2) => `<text x="${cx2}" y="${cy2 + 18.5}" class="morelabel">${label2}</text>` });
+  }
+  const out = [];
+  let cx = 1;
+  let cy = 1;
+  let width = 0;
+  for (const chip of chips) {
+    if (cx > 1 && cx + chip.w > maxWidth - 1) {
+      cx = 1;
+      cy += H + GAP;
+    }
+    out.push(chip.draw(cx, cy));
+    width = Math.max(width, cx + chip.w);
+    cx += chip.w + GAP;
+  }
+  const W2 = Math.ceil(width + 1);
+  const totalH = cy + H + 1;
+  const css = [
+    `text{font-family:${FONT};fill:${t.fg}}`,
+    `.name{font-size:14px}`,
+    `.count{font-weight:600;fill:${t.merged}}`,
+    `.morelabel{font-size:13px;fill:${t.muted}}`,
+    `.chip{fill:${t.bg};stroke:${t.border}}`,
+    `.chip.more{fill:none;stroke-dasharray:3 3}`,
+    `.ini{fill:#fff;font-weight:700}`,
+    `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`
+  ].join("");
+  const label = `${view.title}: ${view.owners.map((o) => `${o.login} ${o.total}`).join(", ")}`;
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W2}" height="${totalH}" viewBox="0 0 ${W2} ${totalH}" role="img" aria-labelledby="t">`,
+    `<title id="t">${escapeXml(label)}</title>`,
+    `<style>${css}</style>`,
+    `<defs>${defs.join("")}</defs>`,
     ...out,
     `</svg>`,
     ""
@@ -7963,18 +8033,20 @@ async function main() {
   const prs = await gh.mergedPullRequests(user, config.since === "auto" ? void 0 : config.since);
   console.log(`Found ${prs.length} merged pull requests by ${user} to other people's repositories.`);
   const known = new Set(prs.map((p) => `${p.owner}/${p.repo}#${p.number}`.toLowerCase()));
-  const missing = config.featured.map((f) => f.pr).filter((ref) => !known.has(ref.toLowerCase()));
+  const compact = config.layout === "compact";
+  const missing = compact ? [] : config.featured.map((f) => f.pr).filter((ref) => !known.has(ref.toLowerCase()));
   const featuredPrs = await gh.pullRequests(missing);
   for (const ref of missing) if (!featuredPrs.has(ref.toLowerCase())) warn(`Featured PR ${ref} was not found or is private; skipping it.`);
-  const view = buildView(prs, featuredPrs, config, user);
+  const view = buildView(prs, featuredPrs, compact ? { ...config, featured: [] } : config, user);
   const shown = [...view.featured.map((f) => f.pr), ...view.owners.flatMap((o) => o.items ?? o.repos?.flatMap((r) => r.items) ?? [])];
   const avatarUrls = [...view.featured.map((f) => f.pr.avatarUrl), ...view.owners.map((o) => o.avatarUrl)];
   const avatars = await fetchAvatars(avatarUrls);
   console.log(`Card shows ${shown.length} PRs from ${view.owners.length} owners (${view.totalPrs} counted).`);
-  write(output, renderCard(view, { theme: THEMES.light, avatars }));
+  const render = (theme) => compact ? renderCompact(view, { theme, avatars }, config.compact.maxWidth) : renderCard(view, { theme, avatars });
+  write(output, render(THEMES.light));
   setOutput("path", output);
   if (outputDark !== "none") {
-    write(outputDark, renderCard(view, { theme: THEMES.dark, avatars }));
+    write(outputDark, render(THEMES.dark));
     setOutput("path-dark", outputDark);
   }
 }
