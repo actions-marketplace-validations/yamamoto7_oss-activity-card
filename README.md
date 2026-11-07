@@ -59,6 +59,7 @@ groups:
   sort: recent      # tie-breaker for equal priority: recent or count
   max_owners: 5     # null shows every owner
   max_prs: 2        # PRs per group (per repo when repo headings are shown)
+  max_badges: 12    # owners past max_owners shown as badges in the footer; 0 for a one-line summary
 
 priority:
   default: 0        # for owners you don't list; -1 shows only what you list
@@ -84,7 +85,7 @@ exclude:
 - An owner you don't list gets `priority.default`. A negative priority hides the owner.
 - With `default: -1`, only the owners you list are shown. A repository listed under `priority.repos` with a priority of 0 or more is shown even when its owner isn't listed. For example, `some-org/one-repo: 1` shows that one repository without the rest of `some-org`.
 - `priority.repos` also orders the repository headings within an owner. A negative value hides that repository.
-- When owners are cut off by `max_owners`, the footer says how many owners and PRs were left out.
+- Owners cut off by `max_owners` are shown in the footer under "Also contributed to", as badges with the avatar, name and number of PRs, in the same order. `groups.max_badges` limits how many badges are drawn, and the rest are summed up in a "+N more" badge. With `max_badges: 0`, the footer shows a one-line summary instead, such as "+8 more owners · 46 PRs".
 
 ### Compact layout
 

@@ -58,7 +58,11 @@ async function main() {
   // The compact layout has no featured section, so featured PRs are counted in their owner's chip.
   const view = buildView(prs, featuredPrs, compact ? { ...config, featured: [] } : config, user);
   const shown = [...view.featured.map((f) => f.pr), ...view.owners.flatMap((o) => o.items ?? o.repos?.flatMap((r) => r.items) ?? [])];
-  const avatarUrls = [...view.featured.map((f) => f.pr.avatarUrl), ...view.owners.map((o) => o.avatarUrl)];
+  const avatarUrls = [
+    ...view.featured.map((f) => f.pr.avatarUrl),
+    ...view.owners.map((o) => o.avatarUrl),
+    ...(compact ? [] : view.cutList.slice(0, view.maxBadges).map((o) => o.avatarUrl)),
+  ];
   const avatars = await fetchAvatars(avatarUrls);
   console.log(`Card shows ${shown.length} PRs from ${view.owners.length} owners (${view.totalPrs} counted).`);
 

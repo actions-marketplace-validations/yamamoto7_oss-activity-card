@@ -1,5 +1,5 @@
 import { escapeXml as x, textWidth, truncate, wrap } from "./text.ts";
-import type { CardView, PullRequest, ViewOwner } from "./types.ts";
+import type { CardView, OwnerSummary, PullRequest, ViewOwner } from "./types.ts";
 
 export interface Theme {
   bg: string;
@@ -192,16 +192,24 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
   }
 
   /* ---------- footer ---------- */
+  const badges = view.cutOwners ? view.maxBadges : 0;
   if (view.cutOwners || view.since) {
     y += 4;
     out.push(`<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" class="rule"/>`);
     if (view.cutOwners) {
-      out.push(`<text x="${PAD}" y="${y + 21}" class="sub">+${plural(view.cutOwners, "more owner")} · ${plural(view.cutPrs, "PR")}</text>`);
+      const label = badges ? "Also contributed to" : `+${plural(view.cutOwners, "more owner")} · ${plural(view.cutPrs, "PR")}`;
+      out.push(`<text x="${PAD}" y="${y + 21}" class="sub">${label}</text>`);
     }
     if (view.since) {
       out.push(`<text x="${W - PAD}" y="${y + 21}" class="sub" text-anchor="end">Since ${formatMonth(view.since)}</text>`);
     }
     y += 30;
+    if (badges) {
+      const chips = ownerChips(view.cutList.slice(0, badges), view.cutOwners - badges, avatar, SMALL_CHIP);
+      const flowed = flow(chips, PAD, y, W - PAD * 2);
+      out.push(...flowed.svg);
+      y = flowed.bottom + 8;
+    }
   }
   y += 10;
 
@@ -222,6 +230,7 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
     `.rule{stroke:${t.border};stroke-width:1}`,
     `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`,
     `.fbox{fill:${t.featuredBg};stroke:${t.border}}`,
+    chipCss(t, SMALL_CHIP),
   ].join("");
 
   return [
@@ -236,66 +245,118 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
   ].join("\n");
 }
 
+interface ChipStyle {
+  height: number;
+  avatar: number;
+  font: number;
+}
+const SMALL_CHIP: ChipStyle = { height: 24, avatar: 16, font: 12 };
+const LARGE_CHIP: ChipStyle = { height: 28, avatar: 20, font: 14 };
+
+interface Chip {
+  w: number;
+  h: number;
+  draw: (cx: number, cy: number) => string;
+}
+
+/** Pill badges with avatar, owner name and PR count, plus a dashed "+N more" badge when `rest` > 0. */
+function ownerChips(
+  owners: OwnerSummary[],
+  rest: number,
+  avatar: ReturnType<typeof avatarRenderer>,
+  st: ChipStyle,
+): Chip[] {
+  const { height: h, avatar: a, font: f } = st;
+  const pad = (h - a) / 2;
+  const base = h / 2 + f * 0.36;
+  const chips: Chip[] = owners.map((o) => {
+    const count = String(o.total);
+    const w = Math.ceil(pad + a + 7 + textWidth(o.login, f) + 7 + textWidth(count, f, true) + h * 0.3);
+    return {
+      w,
+      h,
+      draw: (cx, cy) =>
+        `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${h - 1}" rx="${h / 2}" class="chip"/>` +
+        avatar(o, cx + pad, cy + pad, a) +
+        `<text x="${cx + pad + a + 7}" y="${cy + base}" class="cname">${x(o.login)}<tspan class="ccount" dx="7">${count}</tspan></text>`,
+    };
+  });
+  if (rest > 0) {
+    const label = `+${rest} more`;
+    const w = Math.ceil(h * 0.45 * 2 + textWidth(label, f - 1));
+    chips.push({
+      w,
+      h,
+      draw: (cx, cy) =>
+        `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${h - 1}" rx="${h / 2}" class="chip more"/>` +
+        `<text x="${cx + h * 0.45}" y="${cy + base}" class="cmore">${label}</text>`,
+    });
+  }
+  return chips;
+}
+
+/** Lays chips out left to right, wrapping at maxWidth. */
+function flow(chips: Chip[], x0: number, y0: number, maxWidth: number, gap = 6) {
+  const svg: string[] = [];
+  let cx = x0;
+  let cy = y0;
+  let right = x0;
+  let rowH = 0;
+  for (const chip of chips) {
+    if (cx > x0 && cx + chip.w > x0 + maxWidth) {
+      cx = x0;
+      cy += rowH + gap;
+    }
+    svg.push(chip.draw(cx, cy));
+    right = Math.max(right, cx + chip.w);
+    rowH = Math.max(rowH, chip.h);
+    cx += chip.w + gap;
+  }
+  return { svg, right, bottom: chips.length ? cy + rowH : y0 };
+}
+
+const chipCss = (t: Theme, st: ChipStyle) =>
+  [
+    `.cname{font-size:${st.font}px}`,
+    `.ccount{font-weight:600;fill:${t.merged}}`,
+    `.cmore{font-size:${st.font - 1}px;fill:${t.muted}}`,
+    `.chip{fill:${t.bg};stroke:${t.border}}`,
+    `.chip.more{fill:none;stroke-dasharray:3 3}`,
+  ].join("");
+
 /**
- * One chip per owner (avatar, name, PR count), wrapping into rows. No frame or background,
+ * One badge per owner (avatar, name, PR count), wrapping into rows. No frame or background,
  * so it sits on the README like a row of badges.
  */
 export function renderCompact(view: CardView, { theme: t, avatars = new Map() }: RenderOptions, maxWidth = 495): string {
   const defs: string[] = [];
   const avatar = avatarRenderer(defs, avatars);
-  const H = 28;
-  const GAP = 8;
-
-  const chips = view.owners.map((o) => {
-    const count = String(o.total);
-    const w = Math.ceil(4 + 20 + 8 + textWidth(o.login, 14) + 8 + textWidth(count, 14, true) + 12);
-    return { w, draw: (cx: number, cy: number) =>
-      `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip"/>` +
-      avatar(o, cx + 4, cy + 4) +
-      `<text x="${cx + 32}" y="${cy + 19}" class="name">${x(o.login)}<tspan class="count" dx="8">${count}</tspan></text>` };
-  });
-  if (view.cutOwners) {
-    const label = `+${view.cutOwners} more`;
-    const w = Math.ceil(12 + textWidth(label, 13) + 12);
-    chips.push({ w, draw: (cx, cy) =>
-      `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip more"/>` +
-      `<text x="${cx + 12}" y="${cy + 18.5}" class="morelabel">${label}</text>` });
-  }
-  if (!chips.length) {
-    const label = "No merged pull requests to show yet.";
-    chips.push({ w: Math.ceil(textWidth(label, 13)), draw: (cx, cy) => `<text x="${cx}" y="${cy + 18.5}" class="morelabel">${label}</text>` });
-  }
-
+  const chips = ownerChips(view.owners, view.cutOwners, avatar, LARGE_CHIP);
   const out: string[] = [];
-  let cx = 1;
-  let cy = 1;
-  let width = 0;
-  for (const chip of chips) {
-    if (cx > 1 && cx + chip.w > maxWidth - 1) {
-      cx = 1;
-      cy += H + GAP;
-    }
-    out.push(chip.draw(cx, cy));
-    width = Math.max(width, cx + chip.w);
-    cx += chip.w + GAP;
+  let W: number;
+  let H: number;
+  if (chips.length) {
+    const flowed = flow(chips, 1, 1, maxWidth - 2, 8);
+    out.push(...flowed.svg);
+    W = Math.ceil(flowed.right + 1);
+    H = Math.ceil(flowed.bottom + 1);
+  } else {
+    const label = "No merged pull requests to show yet.";
+    out.push(`<text x="1" y="19" class="cmore">${label}</text>`);
+    W = Math.ceil(textWidth(label, 13) + 2);
+    H = 28;
   }
-  const W = Math.ceil(width + 1);
-  const totalH = cy + H + 1;
 
   const css = [
     `text{font-family:${FONT};fill:${t.fg}}`,
-    `.name{font-size:14px}`,
-    `.count{font-weight:600;fill:${t.merged}}`,
-    `.morelabel{font-size:13px;fill:${t.muted}}`,
-    `.chip{fill:${t.bg};stroke:${t.border}}`,
-    `.chip.more{fill:none;stroke-dasharray:3 3}`,
+    chipCss(t, LARGE_CHIP),
     `.ini{fill:#fff;font-weight:700}`,
     `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`,
   ].join("");
   const label = `${view.title}: ${view.owners.map((o) => `${o.login} ${o.total}`).join(", ")}`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}" role="img" aria-labelledby="t">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="t">`,
     `<title id="t">${x(label)}</title>`,
     `<style>${css}</style>`,
     `<defs>${defs.join("")}</defs>`,

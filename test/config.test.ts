@@ -19,6 +19,7 @@ groups:
   sort: count
   max_owners: null
   max_prs: 3
+  max_badges: 4
 priority:
   default: -1
   owners: { BiomeJS: 10 }
@@ -33,7 +34,7 @@ exclude: [someorg, Foo/Bar#2]
   assert.equal(c.compact.maxWidth, 600);
   assert.equal(c.title, "My OSS work");
   assert.equal(c.since, "2024-01-01");
-  assert.deepEqual(c.groups, { repos: "always", sort: "count", maxOwners: null, maxPrs: 3 });
+  assert.deepEqual(c.groups, { repos: "always", sort: "count", maxOwners: null, maxPrs: 3, maxBadges: 4 });
   assert.deepEqual(c.priority, { default: -1, owners: { biomejs: 10 }, repos: { "honojs/hono": 3 } });
   assert.deepEqual(c.featured, [{ pr: "biomejs/biome#4410", note: "Added an autofix" }, { pr: "honojs/hono#1" }]);
   assert.deepEqual(c.exclude, ["someorg", "foo/bar#2"]);

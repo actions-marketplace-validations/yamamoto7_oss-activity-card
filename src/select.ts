@@ -144,6 +144,11 @@ export function buildView(
     owners,
     cutOwners: cutGroups.length,
     cutPrs: cutGroups.reduce((n, grp) => n + grp.prs.length, 0),
+    maxBadges: g.maxBadges,
+    cutList: cutGroups.map((grp) => {
+      const first = grp.prs[0]!;
+      return { login: first.owner, type: first.ownerType, avatarUrl: first.avatarUrl, total: grp.prs.length };
+    }),
     since: config.since !== "auto" ? config.since : earliest ? earliest.slice(0, 10) : null,
   };
 }

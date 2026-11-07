@@ -34,9 +34,21 @@ test("more content makes a taller card", () => {
   assert.ok(height(render({ groups: { max_prs: 3 } })) > height(render({ groups: { max_prs: 1 } })));
 });
 
-test("footer shows owners left out by max_owners", () => {
-  assert.match(render({ groups: { max_owners: 2 } }), /\+4 more owners · \d+ PRs/);
-  assert.doesNotMatch(render({ groups: { max_owners: null } }), /more owner/);
+test("footer shows owners left out by max_owners as badges", () => {
+  const svg = render({ groups: { max_owners: 2 } });
+  assert.match(svg, /Also contributed to/);
+  assert.equal((svg.match(/class="chip"/g) ?? []).length, 4);
+  assert.match(svg, />sindresorhus<tspan class="ccount" dx="7">1</);
+  assert.doesNotMatch(render({ groups: { max_owners: null } }), /Also contributed to|class="chip"/);
+});
+
+test("max_badges limits footer badges; 0 falls back to a one-line summary", () => {
+  const two = render({ groups: { max_owners: 2, max_badges: 2 } });
+  assert.equal((two.match(/class="chip"/g) ?? []).length, 2);
+  assert.match(two, />\+2 more</);
+  const none = render({ groups: { max_owners: 2, max_badges: 0 } });
+  assert.match(none, /\+4 more owners · \d+ PRs/);
+  assert.doesNotMatch(none, /class="chip/);
 });
 
 test("avatars are embedded when given, otherwise an initial is drawn", () => {
@@ -67,7 +79,7 @@ const compact = (raw: Record<string, unknown> = {}, maxWidth = 495) =>
 test("compact: one chip per owner with its PR count, plus a chip for the rest", () => {
   const svg = compact({ groups: { max_owners: 3 } });
   assert.equal((svg.match(/class="chip"/g) ?? []).length, 3);
-  assert.match(svg, />biomejs<tspan class="count" dx="8">5</);
+  assert.match(svg, />biomejs<tspan class="ccount" dx="7">5</);
   assert.match(svg, /\+3 more</);
   assert.doesNotMatch(svg, /NaN|undefined|Infinity/);
 });

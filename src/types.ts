@@ -34,6 +34,8 @@ export interface Config {
     /** null = no limit */
     maxOwners: number | null;
     maxPrs: number;
+    /** Owners past max_owners shown as badges in the footer. 0 shows a one-line summary instead. */
+    maxBadges: number;
   };
   priority: {
     default: number;
@@ -52,6 +54,13 @@ export interface ViewRepo {
   total: number;
   items: PullRequest[];
   hidden: number;
+}
+
+export interface OwnerSummary {
+  login: string;
+  type: OwnerType;
+  avatarUrl: string;
+  total: number;
 }
 
 export interface ViewOwner {
@@ -79,6 +88,10 @@ export interface CardView {
   owners: ViewOwner[];
   cutOwners: number;
   cutPrs: number;
+  /** The owners left out by max_owners, in display order. */
+  cutList: OwnerSummary[];
+  /** How many of cutList to draw as badges (groups.max_badges). */
+  maxBadges: number;
   /** YYYY-MM-DD, or null when there is nothing to count */
   since: string | null;
 }

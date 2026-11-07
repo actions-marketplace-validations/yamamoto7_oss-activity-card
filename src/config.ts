@@ -10,7 +10,7 @@ export const DEFAULT_CONFIG: Config = {
   compact: { maxWidth: 495 },
   title: "{user}'s OSS Contributions",
   since: "auto",
-  groups: { repos: "never", sort: "recent", maxOwners: 5, maxPrs: 2 },
+  groups: { repos: "never", sort: "recent", maxOwners: 5, maxPrs: 2, maxBadges: 12 },
   priority: { default: 0, owners: {}, repos: {} },
   featured: [],
   exclude: [],
@@ -111,6 +111,8 @@ export function normalizeConfig(raw: Obj): Config {
     if (maxOwners !== undefined) c.groups.maxOwners = maxOwners === null ? null : int(maxOwners, "groups.max_owners", { min: 1 });
     const maxPrs = pick(g, "max_prs", "maxPrs");
     if (maxPrs !== undefined) c.groups.maxPrs = int(maxPrs, "groups.max_prs", { min: 1 });
+    const maxBadges = pick(g, "max_badges", "maxBadges");
+    if (maxBadges !== undefined) c.groups.maxBadges = int(maxBadges, "groups.max_badges", { min: 0 });
   }
 
   const p = raw.priority;

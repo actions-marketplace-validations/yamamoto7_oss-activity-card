@@ -24,6 +24,9 @@ groups:
   max_owners: 5
   # How many PRs to show per group (per repo when repo headings are shown).
   max_prs: 2
+  # Owners past max_owners are shown as badges in the footer. This limits how many;
+  # the rest become a "+N more" badge. 0 shows a one-line summary instead.
+  max_badges: 12
 
 priority:
   # Priority for owners not listed below. Set -1 to show only the owners and repos you list.

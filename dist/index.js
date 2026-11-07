@@ -1634,8 +1634,8 @@ ${ctx.indent}`;
         const vs0 = valueStr[0];
         const nl0 = valueStr.indexOf("\n");
         const hasNewline = nl0 !== -1;
-        const flow = ctx.inFlow ?? value.flow ?? value.items.length === 0;
-        if (hasNewline || !flow) {
+        const flow2 = ctx.inFlow ?? value.flow ?? value.items.length === 0;
+        if (hasNewline || !flow2) {
           let hasPropsLine = false;
           if (hasNewline && (vs0 === "&" || vs0 === "!")) {
             let sp0 = valueStr.indexOf(" ");
@@ -1861,8 +1861,8 @@ var require_stringifyCollection = __commonJS({
     var stringify = require_stringify();
     var stringifyComment = require_stringifyComment();
     function stringifyCollection(collection, ctx, options) {
-      const flow = ctx.inFlow ?? collection.flow;
-      const stringify2 = flow ? stringifyFlowCollection : stringifyBlockCollection;
+      const flow2 = ctx.inFlow ?? collection.flow;
+      const stringify2 = flow2 ? stringifyFlowCollection : stringifyBlockCollection;
       return stringify2(collection, ctx, options);
     }
     function stringifyBlockCollection({ comment, items }, ctx, { blockItemPrefix, flowChars, itemIndent, onChompKeep, onComment }) {
@@ -3505,7 +3505,7 @@ var require_Document = __commonJS({
           options = replacer;
           replacer = void 0;
         }
-        const { aliasDuplicateObjects, anchorPrefix, flow, keepUndefined, onTagObj, tag } = options ?? {};
+        const { aliasDuplicateObjects, anchorPrefix, flow: flow2, keepUndefined, onTagObj, tag } = options ?? {};
         const { onAnchor, setAnchors, sourceObjects } = anchors.createNodeAnchors(
           this,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -3521,7 +3521,7 @@ var require_Document = __commonJS({
           sourceObjects
         };
         const node = createNode.createNode(value, tag, ctx);
-        if (flow && identity.isCollection(node))
+        if (flow2 && identity.isCollection(node))
           node.flow = true;
         setAnchors();
         return node;
@@ -3769,7 +3769,7 @@ ${pointer}
 var require_resolve_props = __commonJS({
   "node_modules/yaml/dist/compose/resolve-props.js"(exports) {
     "use strict";
-    function resolveProps(tokens, { flow, indicator, next, offset, onError, parentIndent, startOnNewline }) {
+    function resolveProps(tokens, { flow: flow2, indicator, next, offset, onError, parentIndent, startOnNewline }) {
       let spaceBefore = false;
       let atNewline = startOnNewline;
       let hasSpace = startOnNewline;
@@ -3798,7 +3798,7 @@ var require_resolve_props = __commonJS({
         }
         switch (token.type) {
           case "space":
-            if (!flow && (indicator !== "doc-start" || next?.type !== "flow-collection") && token.source.includes("	")) {
+            if (!flow2 && (indicator !== "doc-start" || next?.type !== "flow-collection") && token.source.includes("	")) {
               tab = token;
             }
             hasSpace = true;
@@ -3854,15 +3854,15 @@ var require_resolve_props = __commonJS({
             if (anchor || tag)
               onError(token, "BAD_PROP_ORDER", `Anchors and tags must be after the ${token.source} indicator`);
             if (found)
-              onError(token, "UNEXPECTED_TOKEN", `Unexpected ${token.source} in ${flow ?? "collection"}`);
+              onError(token, "UNEXPECTED_TOKEN", `Unexpected ${token.source} in ${flow2 ?? "collection"}`);
             found = token;
             atNewline = indicator === "seq-item-ind" || indicator === "explicit-key-ind";
             hasSpace = false;
             break;
           case "comma":
-            if (flow) {
+            if (flow2) {
               if (comma)
-                onError(token, "UNEXPECTED_TOKEN", `Unexpected , in ${flow}`);
+                onError(token, "UNEXPECTED_TOKEN", `Unexpected , in ${flow2}`);
               comma = token;
               atNewline = false;
               hasSpace = false;
@@ -7375,7 +7375,7 @@ var DEFAULT_CONFIG = {
   compact: { maxWidth: 495 },
   title: "{user}'s OSS Contributions",
   since: "auto",
-  groups: { repos: "never", sort: "recent", maxOwners: 5, maxPrs: 2 },
+  groups: { repos: "never", sort: "recent", maxOwners: 5, maxPrs: 2, maxBadges: 12 },
   priority: { default: 0, owners: {}, repos: {} },
   featured: [],
   exclude: []
@@ -7460,6 +7460,8 @@ function normalizeConfig(raw) {
     if (maxOwners !== void 0) c.groups.maxOwners = maxOwners === null ? null : int(maxOwners, "groups.max_owners", { min: 1 });
     const maxPrs = pick(g, "max_prs", "maxPrs");
     if (maxPrs !== void 0) c.groups.maxPrs = int(maxPrs, "groups.max_prs", { min: 1 });
+    const maxBadges = pick(g, "max_badges", "maxBadges");
+    if (maxBadges !== void 0) c.groups.maxBadges = int(maxBadges, "groups.max_badges", { min: 0 });
   }
   const p = raw.priority;
   if (p !== void 0 && p !== null) {
@@ -7803,16 +7805,24 @@ function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
     out.push(`<text x="${PAD}" y="${y + 18}" class="sub">No merged pull requests to show yet.</text>`);
     y += 30;
   }
+  const badges = view.cutOwners ? view.maxBadges : 0;
   if (view.cutOwners || view.since) {
     y += 4;
     out.push(`<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" class="rule"/>`);
     if (view.cutOwners) {
-      out.push(`<text x="${PAD}" y="${y + 21}" class="sub">+${plural(view.cutOwners, "more owner")} \xB7 ${plural(view.cutPrs, "PR")}</text>`);
+      const label = badges ? "Also contributed to" : `+${plural(view.cutOwners, "more owner")} \xB7 ${plural(view.cutPrs, "PR")}`;
+      out.push(`<text x="${PAD}" y="${y + 21}" class="sub">${label}</text>`);
     }
     if (view.since) {
       out.push(`<text x="${W - PAD}" y="${y + 21}" class="sub" text-anchor="end">Since ${formatMonth(view.since)}</text>`);
     }
     y += 30;
+    if (badges) {
+      const chips = ownerChips(view.cutList.slice(0, badges), view.cutOwners - badges, avatar, SMALL_CHIP);
+      const flowed = flow(chips, PAD, y, W - PAD * 2);
+      out.push(...flowed.svg);
+      y = flowed.bottom + 8;
+    }
   }
   y += 10;
   const H = Math.ceil(y);
@@ -7831,7 +7841,8 @@ function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
     `.ini{fill:#fff;font-weight:700}`,
     `.rule{stroke:${t.border};stroke-width:1}`,
     `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`,
-    `.fbox{fill:${t.featuredBg};stroke:${t.border}}`
+    `.fbox{fill:${t.featuredBg};stroke:${t.border}}`,
+    chipCss(t, SMALL_CHIP)
   ].join("");
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="t">`,
@@ -7844,53 +7855,84 @@ function renderCard(view, { theme: t, avatars = /* @__PURE__ */ new Map() }) {
     ""
   ].join("\n");
 }
+var SMALL_CHIP = { height: 24, avatar: 16, font: 12 };
+var LARGE_CHIP = { height: 28, avatar: 20, font: 14 };
+function ownerChips(owners, rest, avatar, st) {
+  const { height: h, avatar: a, font: f } = st;
+  const pad = (h - a) / 2;
+  const base = h / 2 + f * 0.36;
+  const chips = owners.map((o) => {
+    const count = String(o.total);
+    const w = Math.ceil(pad + a + 7 + textWidth(o.login, f) + 7 + textWidth(count, f, true) + h * 0.3);
+    return {
+      w,
+      h,
+      draw: (cx, cy) => `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${h - 1}" rx="${h / 2}" class="chip"/>` + avatar(o, cx + pad, cy + pad, a) + `<text x="${cx + pad + a + 7}" y="${cy + base}" class="cname">${escapeXml(o.login)}<tspan class="ccount" dx="7">${count}</tspan></text>`
+    };
+  });
+  if (rest > 0) {
+    const label = `+${rest} more`;
+    const w = Math.ceil(h * 0.45 * 2 + textWidth(label, f - 1));
+    chips.push({
+      w,
+      h,
+      draw: (cx, cy) => `<rect x="${cx + 0.5}" y="${cy + 0.5}" width="${w - 1}" height="${h - 1}" rx="${h / 2}" class="chip more"/><text x="${cx + h * 0.45}" y="${cy + base}" class="cmore">${label}</text>`
+    });
+  }
+  return chips;
+}
+function flow(chips, x0, y0, maxWidth, gap = 6) {
+  const svg = [];
+  let cx = x0;
+  let cy = y0;
+  let right = x0;
+  let rowH = 0;
+  for (const chip of chips) {
+    if (cx > x0 && cx + chip.w > x0 + maxWidth) {
+      cx = x0;
+      cy += rowH + gap;
+    }
+    svg.push(chip.draw(cx, cy));
+    right = Math.max(right, cx + chip.w);
+    rowH = Math.max(rowH, chip.h);
+    cx += chip.w + gap;
+  }
+  return { svg, right, bottom: chips.length ? cy + rowH : y0 };
+}
+var chipCss = (t, st) => [
+  `.cname{font-size:${st.font}px}`,
+  `.ccount{font-weight:600;fill:${t.merged}}`,
+  `.cmore{font-size:${st.font - 1}px;fill:${t.muted}}`,
+  `.chip{fill:${t.bg};stroke:${t.border}}`,
+  `.chip.more{fill:none;stroke-dasharray:3 3}`
+].join("");
 function renderCompact(view, { theme: t, avatars = /* @__PURE__ */ new Map() }, maxWidth = 495) {
   const defs = [];
   const avatar = avatarRenderer(defs, avatars);
-  const H = 28;
-  const GAP = 8;
-  const chips = view.owners.map((o) => {
-    const count = String(o.total);
-    const w = Math.ceil(4 + 20 + 8 + textWidth(o.login, 14) + 8 + textWidth(count, 14, true) + 12);
-    return { w, draw: (cx2, cy2) => `<rect x="${cx2 + 0.5}" y="${cy2 + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip"/>` + avatar(o, cx2 + 4, cy2 + 4) + `<text x="${cx2 + 32}" y="${cy2 + 19}" class="name">${escapeXml(o.login)}<tspan class="count" dx="8">${count}</tspan></text>` };
-  });
-  if (view.cutOwners) {
-    const label2 = `+${view.cutOwners} more`;
-    const w = Math.ceil(12 + textWidth(label2, 13) + 12);
-    chips.push({ w, draw: (cx2, cy2) => `<rect x="${cx2 + 0.5}" y="${cy2 + 0.5}" width="${w - 1}" height="${H - 1}" rx="${H / 2}" class="chip more"/><text x="${cx2 + 12}" y="${cy2 + 18.5}" class="morelabel">${label2}</text>` });
-  }
-  if (!chips.length) {
-    const label2 = "No merged pull requests to show yet.";
-    chips.push({ w: Math.ceil(textWidth(label2, 13)), draw: (cx2, cy2) => `<text x="${cx2}" y="${cy2 + 18.5}" class="morelabel">${label2}</text>` });
-  }
+  const chips = ownerChips(view.owners, view.cutOwners, avatar, LARGE_CHIP);
   const out = [];
-  let cx = 1;
-  let cy = 1;
-  let width = 0;
-  for (const chip of chips) {
-    if (cx > 1 && cx + chip.w > maxWidth - 1) {
-      cx = 1;
-      cy += H + GAP;
-    }
-    out.push(chip.draw(cx, cy));
-    width = Math.max(width, cx + chip.w);
-    cx += chip.w + GAP;
+  let W2;
+  let H;
+  if (chips.length) {
+    const flowed = flow(chips, 1, 1, maxWidth - 2, 8);
+    out.push(...flowed.svg);
+    W2 = Math.ceil(flowed.right + 1);
+    H = Math.ceil(flowed.bottom + 1);
+  } else {
+    const label2 = "No merged pull requests to show yet.";
+    out.push(`<text x="1" y="19" class="cmore">${label2}</text>`);
+    W2 = Math.ceil(textWidth(label2, 13) + 2);
+    H = 28;
   }
-  const W2 = Math.ceil(width + 1);
-  const totalH = cy + H + 1;
   const css = [
     `text{font-family:${FONT};fill:${t.fg}}`,
-    `.name{font-size:14px}`,
-    `.count{font-weight:600;fill:${t.merged}}`,
-    `.morelabel{font-size:13px;fill:${t.muted}}`,
-    `.chip{fill:${t.bg};stroke:${t.border}}`,
-    `.chip.more{fill:none;stroke-dasharray:3 3}`,
+    chipCss(t, LARGE_CHIP),
     `.ini{fill:#fff;font-weight:700}`,
     `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`
   ].join("");
   const label = `${view.title}: ${view.owners.map((o) => `${o.login} ${o.total}`).join(", ")}`;
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W2}" height="${totalH}" viewBox="0 0 ${W2} ${totalH}" role="img" aria-labelledby="t">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W2}" height="${H}" viewBox="0 0 ${W2} ${H}" role="img" aria-labelledby="t">`,
     `<title id="t">${escapeXml(label)}</title>`,
     `<style>${css}</style>`,
     `<defs>${defs.join("")}</defs>`,
@@ -7994,6 +8036,11 @@ function buildView(prs, featuredPrs, config, user) {
     owners,
     cutOwners: cutGroups.length,
     cutPrs: cutGroups.reduce((n, grp) => n + grp.prs.length, 0),
+    maxBadges: g.maxBadges,
+    cutList: cutGroups.map((grp) => {
+      const first = grp.prs[0];
+      return { login: first.owner, type: first.ownerType, avatarUrl: first.avatarUrl, total: grp.prs.length };
+    }),
     since: config.since !== "auto" ? config.since : earliest ? earliest.slice(0, 10) : null
   };
 }
@@ -8040,7 +8087,11 @@ async function main() {
   for (const ref of missing) if (!featuredPrs.has(ref.toLowerCase())) warn(`Featured PR ${ref} was not found or is private; skipping it.`);
   const view = buildView(prs, featuredPrs, compact ? { ...config, featured: [] } : config, user);
   const shown = [...view.featured.map((f) => f.pr), ...view.owners.flatMap((o) => o.items ?? o.repos?.flatMap((r) => r.items) ?? [])];
-  const avatarUrls = [...view.featured.map((f) => f.pr.avatarUrl), ...view.owners.map((o) => o.avatarUrl)];
+  const avatarUrls = [
+    ...view.featured.map((f) => f.pr.avatarUrl),
+    ...view.owners.map((o) => o.avatarUrl),
+    ...compact ? [] : view.cutList.slice(0, view.maxBadges).map((o) => o.avatarUrl)
+  ];
   const avatars = await fetchAvatars(avatarUrls);
   console.log(`Card shows ${shown.length} PRs from ${view.owners.length} owners (${view.totalPrs} counted).`);
   const render = (theme) => compact ? renderCompact(view, { theme, avatars }, config.compact.maxWidth) : renderCard(view, { theme, avatars });
