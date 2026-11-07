@@ -98,7 +98,7 @@ function writeLinkedCard(view: CardView, avatars: Map<string, string>, readme: s
     const darkFile = join(dir, `${n}-dark.svg`);
     writeFileSync(lightFile, s.svg);
     writeFileSync(darkFile, dark[i]!.svg);
-    return { href: s.href, label: s.label, height: s.height, light: rel(lightFile), dark: rel(darkFile) };
+    return { href: s.href, label: s.label, light: rel(lightFile), dark: rel(darkFile) };
   });
   console.log(`Wrote ${linked.length} linked slices to ${dir}/`);
 

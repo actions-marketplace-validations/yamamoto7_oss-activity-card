@@ -42,6 +42,8 @@ The header, "+N more" rows and footer have no link. PR numbers are drawn in GitH
 
 The rows are written to `oss-card/` and put between the two markers, replacing what was there. Each row has the PR title or name as its alt text and tooltip. The rows line up without gaps, so the card looks the same as the single image.
 
+The card is 495px wide. Where the README is narrower, such as on a phone, every row shrinks by the same ratio, so the card shrinks as one image. It doesn't grow past 495px, and text doesn't reflow, since each row is an image.
+
 ### Single image
 
 The workflow also writes the whole card as `oss-card.svg` and `oss-card-dark.svg`. To use it without links, drop the `readme` input and add this to your README instead:

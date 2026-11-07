@@ -7656,10 +7656,10 @@ var END = "<!-- oss-card:end -->";
 var WIDTH = 495;
 function readmeBlock(slices) {
   const rows = slices.map((s) => {
-    const picture = `<picture><source media="(prefers-color-scheme: dark)" srcset="${escapeXml(s.dark)}"><img src="${escapeXml(s.light)}" alt="${escapeXml(s.label)}" width="${WIDTH}" height="${s.height}" align="top"></picture>`;
+    const picture = `<picture><source media="(prefers-color-scheme: dark)" srcset="${escapeXml(s.dark)}"><img src="${escapeXml(s.light)}" alt="${escapeXml(s.label)}" width="${WIDTH}" align="left"></picture>`;
     return s.href ? `<a href="${escapeXml(s.href)}" title="${escapeXml(s.label)}">${picture}</a>` : picture;
   });
-  return ["<div>", rows.join("<br>\n"), "</div>"].join("\n");
+  return ["<div>", ...rows, `<br clear="all">`, "</div>"].join("\n");
 }
 function replaceBlock(readme, block) {
   const s = readme.indexOf(START);
@@ -8148,7 +8148,7 @@ function writeLinkedCard(view, avatars, readme, dir) {
     const darkFile = join(dir, `${n}-dark.svg`);
     writeFileSync(lightFile, s.svg);
     writeFileSync(darkFile, dark[i].svg);
-    return { href: s.href, label: s.label, height: s.height, light: rel(lightFile), dark: rel(darkFile) };
+    return { href: s.href, label: s.label, light: rel(lightFile), dark: rel(darkFile) };
   });
   console.log(`Wrote ${linked.length} linked slices to ${dir}/`);
   const updated = replaceBlock(readFileSync(readme, "utf8"), readmeBlock(linked));

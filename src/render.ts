@@ -196,7 +196,6 @@ function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
   const more = (n: number, indent: number, trunks: number[], scope: string) => {
     if (n <= 0) return;
     start(null, `${plural(n, "more PR")} in ${scope}`);
-    // 24px tall: rows in a README must be at least one text line high to stack without gaps.
     for (const tx of trunks) emit(trunk(y, y + 24, tx));
     emit(`<text x="${PAD + indent + 24}" y="${y + 16}" class="meta">+${n} more</text>`);
     y += 24;
