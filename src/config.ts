@@ -12,6 +12,7 @@ export const DEFAULT_CONFIG: Config = {
   priority: { default: 0, owners: {}, repos: {} },
   featured: [],
   exclude: [],
+  credit: true,
 };
 
 const PR_REF = /^[\w.-]+\/[\w.-]+#\d+$/;
@@ -71,6 +72,12 @@ export function normalizeConfig(raw: Obj): Config {
   if (title !== undefined) {
     if (typeof title !== "string") throw new ConfigError("title must be a string");
     c.title = title;
+  }
+
+  const credit = raw.credit;
+  if (credit !== undefined && credit !== null) {
+    if (typeof credit !== "boolean") throw new ConfigError(`credit must be true or false (got ${JSON.stringify(credit)})`);
+    c.credit = credit;
   }
 
   const since = raw.since;

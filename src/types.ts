@@ -39,6 +39,8 @@ export interface Config {
   featured: { pr: string; note?: string }[];
   /** "owner", "owner/repo" or "owner/repo#123" */
   exclude: string[];
+  /** Show the small "Made with oss-activity-card" line at the bottom. */
+  credit: boolean;
 }
 
 /* ---------- view model consumed by the renderer ---------- */
@@ -91,4 +93,5 @@ export interface CardView {
   maxBadges: number;
   /** YYYY-MM-DD, or null when there is nothing to count */
   since: string | null;
+  credit: boolean;
 }

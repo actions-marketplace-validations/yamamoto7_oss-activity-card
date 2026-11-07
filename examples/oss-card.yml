@@ -48,3 +48,7 @@ exclude:
   - some-org
   - another-org/sandbox
   - my-favorite-org/core#999
+
+# A small "Made with oss-activity-card" line at the bottom of the card, linking to this project.
+# Keeping it helps others find the action; set false to remove it.
+credit: true

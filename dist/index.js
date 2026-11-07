@@ -7376,7 +7376,8 @@ var DEFAULT_CONFIG = {
   groups: { repos: "always", sort: "recent", maxOwners: 5, maxPrs: 2, maxBadges: 12 },
   priority: { default: 0, owners: {}, repos: {} },
   featured: [],
-  exclude: []
+  exclude: [],
+  credit: true
 };
 var PR_REF = /^[\w.-]+\/[\w.-]+#\d+$/;
 var EXCLUDE_REF = /^[\w.-]+(\/[\w.-]+(#\d+)?)?$/;
@@ -7425,6 +7426,11 @@ function normalizeConfig(raw) {
   if (title !== void 0) {
     if (typeof title !== "string") throw new ConfigError("title must be a string");
     c.title = title;
+  }
+  const credit = raw.credit;
+  if (credit !== void 0 && credit !== null) {
+    if (typeof credit !== "boolean") throw new ConfigError(`credit must be true or false (got ${JSON.stringify(credit)})`);
+    c.credit = credit;
   }
   const since = raw.since;
   if (since !== void 0 && since !== null) {
@@ -7735,6 +7741,7 @@ function avatarRenderer(addDef, avatars) {
     return fill + shape.replace("/>", ` class="ring"/>`);
   };
 }
+var PROJECT_URL = "https://github.com/yamamoto7/oss-activity-card";
 function layoutCard(view, avatars) {
   const segments = [];
   const backgrounds = [];
@@ -7861,7 +7868,13 @@ function layoutCard(view, avatars) {
       y = flowed.bottom + 8;
     }
   }
-  y += 10;
+  if (view.credit) {
+    start(PROJECT_URL, "Made with oss-activity-card");
+    emit(`<text x="${W - PAD}" y="${y + 13}" class="credit" text-anchor="end">Made with <tspan class="credit-name">oss-activity-card</tspan></text>`);
+    y += 22;
+  } else {
+    y += 10;
+  }
   segments.at(-1).y1 = y;
   return { height: Math.ceil(y), segments, backgrounds, title: `${view.title}: ${sub}` };
 }
@@ -7879,6 +7892,7 @@ function cardCss(t) {
     `.add{fill:${t.add}}.del{fill:${t.del}}.ref{fill:${t.title}}`,
     `.merged{fill:${t.merged}}.star{fill:${t.star}}.mutedfill{fill:${t.muted}}`,
     `.ini{fill:#fff;font-weight:700}`,
+    `.credit{font-size:11px;fill:${t.muted}}.credit-name{font-weight:600}`,
     `.rule{stroke:${t.border};stroke-width:1}`,
     `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`,
     `.fbox{fill:${t.featuredBg};stroke:${t.border}}`,
@@ -8070,7 +8084,8 @@ function buildView(prs, featuredPrs, config, user) {
       const first = grp.prs[0];
       return { login: first.owner, type: first.ownerType, avatarUrl: first.avatarUrl, total: grp.prs.length };
     }),
-    since: config.since !== "auto" ? config.since : earliest ? earliest.slice(0, 10) : null
+    since: config.since !== "auto" ? config.since : earliest ? earliest.slice(0, 10) : null,
+    credit: config.credit
   };
 }
 

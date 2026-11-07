@@ -120,6 +120,8 @@ interface Layout {
   title: string;
 }
 
+const PROJECT_URL = "https://github.com/yamamoto7/oss-activity-card";
+
 function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
   const segments: Segment[] = [];
   const backgrounds: Layout["backgrounds"] = [];
@@ -260,7 +262,13 @@ function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
       y = flowed.bottom + 8;
     }
   }
-  y += 10;
+  if (view.credit) {
+    start(PROJECT_URL, "Made with oss-activity-card");
+    emit(`<text x="${W - PAD}" y="${y + 13}" class="credit" text-anchor="end">Made with <tspan class="credit-name">oss-activity-card</tspan></text>`);
+    y += 22;
+  } else {
+    y += 10;
+  }
   segments.at(-1)!.y1 = y;
 
   return { height: Math.ceil(y), segments, backgrounds, title: `${view.title}: ${sub}` };
@@ -280,6 +288,7 @@ function cardCss(t: Theme): string {
     `.add{fill:${t.add}}.del{fill:${t.del}}.ref{fill:${t.title}}`,
     `.merged{fill:${t.merged}}.star{fill:${t.star}}.mutedfill{fill:${t.muted}}`,
     `.ini{fill:#fff;font-weight:700}`,
+    `.credit{font-size:11px;fill:${t.muted}}.credit-name{font-weight:600}`,
     `.rule{stroke:${t.border};stroke-width:1}`,
     `.ring{fill:none;stroke:${t.border};stroke-width:1;opacity:.6}`,
     `.fbox{fill:${t.featuredBg};stroke:${t.border}}`,

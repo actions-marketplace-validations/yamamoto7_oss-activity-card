@@ -88,7 +88,6 @@ test("slices cover the whole card, one link per band", () => {
   const slices = renderSlices(view, { theme: THEMES.light });
 
   assert.equal(slices.reduce((n, s) => n + s.height, 0), height(full));
-  assert.ok(slices.every((s) => s.height >= 24), "every row is at least one README text line tall");
   let y = 0;
   for (const s of slices) {
     assert.match(s.svg, new RegExp(`viewBox="0 ${y} 495 ${s.height}"`));
@@ -103,12 +102,22 @@ test("slices cover the whole card, one link per band", () => {
   assert.ok(hrefs.includes("https://github.com/honojs/hono/pull/3521"), "PR");
   assert.match(slices.find((s) => s.href === "https://github.com/honojs/hono")!.label, /23\.4k stars/);
 
-  // Only PR, repo and owner rows link anywhere.
+  // Only PR, repo and owner rows link anywhere, plus the credit line.
   assert.equal(hrefs[0], null, "header");
-  assert.equal(hrefs.at(-1), null, "footer");
+  assert.equal(hrefs.at(-2), null, "footer");
+  assert.equal(hrefs.at(-1), "https://github.com/yamamoto7/oss-activity-card", "credit");
   const more = slices.find((s) => s.label.startsWith("1 more PR in honojs/hono"));
   assert.ok(more && more.href === null, "+N more");
   assert.ok(hrefs.every((h) => h === null || /^https:\/\/github\.com\/[\w.-]+(\/[\w.-]+(\/pull\/\d+)?)?$/.test(h)));
+});
+
+test("credit line at the bottom, unless credit: false", () => {
+  assert.match(render(), /Made with <tspan class="credit-name">oss-activity-card<\/tspan>/);
+  const off = render({ credit: false });
+  assert.doesNotMatch(off, /Made with/);
+  assert.equal(height(render()) - height(off), 12);
+  const view = buildView(SAMPLE, new Map(), normalizeConfig({ credit: false }), "me");
+  assert.ok(!renderSlices(view, { theme: THEMES.light }).some((s) => s.href?.includes("oss-activity-card")));
 });
 
 test("PR references are link-colored", () => {

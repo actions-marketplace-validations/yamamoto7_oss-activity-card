@@ -37,6 +37,7 @@ An image in a README can link to only one place, and links inside an SVG don't w
 | Featured PR, PR | The pull request |
 | Repository | The repository |
 | Owner | The owner's GitHub page |
+| "Made with oss-activity-card" | This project (hide it with `credit: false`) |
 
 The header, "+N more" rows and footer have no link. PR numbers are drawn in GitHub's link color, since a README image can't change on hover.
 
@@ -92,6 +93,8 @@ exclude:
   - some-org
   - another-org/sandbox
   - my-favorite-org/core#999
+
+credit: true        # "Made with oss-activity-card" at the bottom; false removes it
 ```
 
 ### Ordering and visibility

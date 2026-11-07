@@ -154,5 +154,6 @@ export function buildView(
       return { login: first.owner, type: first.ownerType, avatarUrl: first.avatarUrl, total: grp.prs.length };
     }),
     since: config.since !== "auto" ? config.since : earliest ? earliest.slice(0, 10) : null,
+    credit: config.credit,
   };
 }

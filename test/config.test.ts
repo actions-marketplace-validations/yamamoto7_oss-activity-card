@@ -44,6 +44,12 @@ test("rejects bad values with a message naming the key", () => {
   assert.throws(() => parseConfig("groups: { sort: stars }"), /groups.sort/);
   assert.throws(() => parseConfig("- a\n- b"), /YAML map/);
   assert.throws(() => parseConfig("groups: { repos: sometimes }"), /groups.repos/);
+  assert.throws(() => parseConfig("credit: no thanks"), /credit/);
+});
+
+test("credit is on by default and can be turned off", () => {
+  assert.equal(parseConfig("").credit, true);
+  assert.equal(parseConfig("credit: false").credit, false);
 });
 
 test("the example config in examples/ is valid", async () => {
