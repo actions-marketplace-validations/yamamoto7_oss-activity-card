@@ -76,6 +76,8 @@ export interface ViewFeatured {
 }
 
 export interface CardView {
+  /** GitHub login whose PRs are shown. */
+  user: string;
   title: string;
   totalPrs: number;
   totalOwners: number;

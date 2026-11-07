@@ -21,6 +21,15 @@ inputs:
   output-dark:
     description: Where to write the dark-theme SVG. Set to "none" to skip it.
     default: oss-card-dark.svg
+  readme:
+    description: >-
+      README to put a linked version of the card into, between <!-- oss-card:start --> and
+      <!-- oss-card:end -->. The card is cut into one image per row so each PR, owner and repo links
+      to its page. Leave empty to only write the single-image SVGs.
+    default: ""
+  slices-dir:
+    description: Directory for the per-row images used by the linked card.
+    default: oss-card
 
 outputs:
   path:

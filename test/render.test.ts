@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { normalizeConfig } from "../src/config.ts";
-import { formatCount, formatMonth, renderCard, THEMES } from "../src/render.ts";
+import { formatCount, formatMonth, renderCard, renderSlices, THEMES } from "../src/render.ts";
 import { buildView } from "../src/select.ts";
 import { textWidth, truncate, wrap } from "../src/text.ts";
 import { pr, SAMPLE } from "./fixtures.ts";
@@ -79,6 +79,31 @@ test("repo headings show the repository's stars", () => {
   assert.match(svg, />23\.4k</);
   assert.match(svg, />3\.1k</);
   assert.doesNotMatch(render({ groups: { repos: false } }), />23\.4k</);
+});
+
+test("slices cover the whole card, one link per band", () => {
+  const raw = { featured: [{ pr: "biomejs/biome#4410", note: "Autofix" }], groups: { max_owners: 2, max_prs: 1 } };
+  const view = buildView(SAMPLE, new Map(), normalizeConfig(raw), "me");
+  const full = renderCard(view, { theme: THEMES.light });
+  const slices = renderSlices(view, { theme: THEMES.light });
+
+  assert.equal(slices.reduce((n, s) => n + s.height, 0), height(full));
+  assert.ok(slices.every((s) => s.height > 0));
+  let y = 0;
+  for (const s of slices) {
+    assert.match(s.svg, new RegExp(`viewBox="0 ${y} 495 ${s.height}"`));
+    assert.doesNotMatch(s.svg, /NaN|undefined|Infinity/);
+    y += s.height;
+  }
+
+  const hrefs = slices.map((s) => s.href);
+  assert.match(hrefs[0]!, /^https:\/\/github\.com\/search\?q=is%3Apr%20is%3Amerged%20author%3Ame/);
+  assert.ok(hrefs.includes("https://github.com/biomejs/biome/pull/4410"), "featured PR");
+  assert.ok(hrefs.includes("https://github.com/honojs"), "owner");
+  assert.ok(hrefs.includes("https://github.com/honojs/hono"), "repo");
+  assert.ok(hrefs.includes("https://github.com/honojs/hono/pull/3521"), "PR");
+  assert.ok(hrefs.some((h) => h.includes(encodeURIComponent("repo:honojs/hono"))), "+N more searches that repo");
+  assert.match(slices.find((s) => s.href === "https://github.com/honojs/hono")!.label, /23\.4k stars/);
 });
 
 test("formatCount", () => {

@@ -138,6 +138,7 @@ export function buildView(
   );
 
   return {
+    user,
     title: config.title.replaceAll("{user}", user),
     totalPrs: represented.length,
     totalOwners: new Set(represented.map((pr) => pr.owner.toLowerCase())).size,

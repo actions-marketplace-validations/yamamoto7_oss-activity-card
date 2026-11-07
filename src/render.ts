@@ -82,7 +82,7 @@ interface AvatarOwner {
 }
 
 /** Draws an avatar clipped to GitHub's shapes: rounded square for organizations, circle for users. */
-function avatarRenderer(defs: string[], avatars: Map<string, string>) {
+function avatarRenderer(addDef: (def: string) => void, avatars: Map<string, string>) {
   let clipId = 0;
   return (owner: AvatarOwner, ax: number, ay: number, size = 20) => {
     const id = `c${clipId++}`;
@@ -90,7 +90,7 @@ function avatarRenderer(defs: string[], avatars: Map<string, string>) {
       owner.type === "User"
         ? `<circle cx="${ax + size / 2}" cy="${ay + size / 2}" r="${size / 2}"/>`
         : `<rect x="${ax}" y="${ay}" width="${size}" height="${size}" rx="${size / 4}"/>`;
-    defs.push(`<clipPath id="${id}">${shape}</clipPath>`);
+    addDef(`<clipPath id="${id}">${shape}</clipPath>`);
     const data = avatars.get(owner.avatarUrl);
     const fill = data
       ? `<image href="${data}" x="${ax}" y="${ay}" width="${size}" height="${size}" clip-path="url(#${id})"/>`
@@ -100,12 +100,41 @@ function avatarRenderer(defs: string[], avatars: Map<string, string>) {
   };
 }
 
-export function renderCard(view: CardView, { theme: t, avatars = new Map() }: RenderOptions): string {
-  const out: string[] = [];
-  const defs: string[] = [];
-  let y = 0;
+/** A horizontal band of the card. renderSlices turns each one into its own image so it can carry a link. */
+export interface Segment {
+  y0: number;
+  y1: number;
+  href: string;
+  /** Alt text and tooltip for the band. */
+  label: string;
+  els: string[];
+  defs: string[];
+}
 
-  const avatar = avatarRenderer(defs, avatars);
+interface Layout {
+  height: number;
+  segments: Segment[];
+  /** Shapes spanning several bands, drawn behind every band they overlap. */
+  backgrounds: { y0: number; y1: number; el: string }[];
+  title: string;
+}
+
+const searchUrl = (q: string) => `https://github.com/search?q=${encodeURIComponent(q)}&type=pullrequests`;
+
+function layoutCard(view: CardView, avatars: Map<string, string>): Layout {
+  const segments: Segment[] = [];
+  const backgrounds: Layout["backgrounds"] = [];
+  let y = 0;
+  const start = (href: string, label: string) => {
+    const prev = segments.at(-1);
+    if (prev) prev.y1 = y;
+    segments.push({ y0: y, y1: y, href, label, els: [], defs: [] });
+  };
+  const current = () => segments.at(-1)!;
+  const emit = (...els: string[]) => current().els.push(...els);
+  const avatar = avatarRenderer((def) => current().defs.push(def), avatars);
+  const merged = `is:pr is:merged author:${view.user}`;
+  const prLabel = (pr: PullRequest) => `${pr.owner}/${pr.repo}#${pr.number}: ${pr.title}`;
 
   const meta = (pr: PullRequest, label: string, mx: number, my: number) =>
     `<text x="${mx}" y="${my}" class="meta">${x(label)}` +
@@ -115,8 +144,9 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
   /* ---------- header ---------- */
   const sub = `${plural(view.totalPrs, "merged PR")} · ${plural(view.totalOwners, "owner")}`;
   const subW = textWidth(sub, 12);
-  out.push(`<text x="${PAD}" y="34" class="title">${x(truncate(view.title, W - PAD * 2 - subW - 14, 16, true))}</text>`);
-  out.push(`<text x="${W - PAD}" y="34" class="sub" text-anchor="end">${x(sub)}</text>`);
+  start(searchUrl(`${merged} -user:${view.user}`), `${view.title}: ${sub}`);
+  emit(`<text x="${PAD}" y="34" class="title">${x(truncate(view.title, W - PAD * 2 - subW - 14, 16, true))}</text>`);
+  emit(`<text x="${W - PAD}" y="34" class="sub" text-anchor="end">${x(sub)}</text>`);
   y = 50;
 
   /* ---------- featured ---------- */
@@ -124,28 +154,27 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
     const bx = 16;
     const bw = W - 32;
     const top = y;
-    const inner: string[] = [];
-    inner.push(icon(ICON.pin, bx + 14, y + 10, 12, "star"));
-    inner.push(`<text x="${bx + 31}" y="${y + 20}" class="flabel">FEATURED</text>`);
+    emit(icon(ICON.pin, bx + 14, y + 10, 12, "star"));
+    emit(`<text x="${bx + 31}" y="${y + 20}" class="flabel">FEATURED</text>`);
     y += 26;
     view.featured.forEach((f, i) => {
-      if (i > 0) inner.push(`<line x1="${bx + 14}" x2="${bx + bw - 14}" y1="${y}" y2="${y}" class="rule"/>`);
+      start(f.pr.url, `Featured: ${prLabel(f.pr)}`);
+      if (i > 0) emit(`<line x1="${bx + 14}" x2="${bx + bw - 14}" y1="${y}" y2="${y}" class="rule"/>`);
       const tx = bx + 44;
       const tw = bw - 44 - 14;
-      inner.push(avatar({ login: f.pr.owner, type: f.pr.ownerType, avatarUrl: f.pr.avatarUrl }, bx + 14, y + 10));
-      inner.push(`<text x="${tx}" y="${y + 23}" class="ftitle">${x(truncate(f.pr.title, tw, 14, true))}</text>`);
+      emit(avatar({ login: f.pr.owner, type: f.pr.ownerType, avatarUrl: f.pr.avatarUrl }, bx + 14, y + 10));
+      emit(`<text x="${tx}" y="${y + 23}" class="ftitle">${x(truncate(f.pr.title, tw, 14, true))}</text>`);
       let by = y + 23;
       for (const line of f.note ? wrap(f.note, tw, 12.5, 2) : []) {
         by += 17;
-        inner.push(`<text x="${tx}" y="${by}" class="note">${x(line)}</text>`);
+        emit(`<text x="${tx}" y="${by}" class="note">${x(line)}</text>`);
       }
       by += 17;
-      inner.push(meta(f.pr, `${f.pr.owner}/${f.pr.repo}#${f.pr.number}`, tx, by));
+      emit(meta(f.pr, `${f.pr.owner}/${f.pr.repo}#${f.pr.number}`, tx, by));
       y = by + 13;
     });
     y += 2;
-    out.push(`<rect x="${bx + 0.5}" y="${top + 0.5}" width="${bw - 1}" height="${y - top - 1}" rx="6" class="fbox"/>`);
-    out.push(...inner);
+    backgrounds.push({ y0: top, y1: y, el: `<rect x="${bx + 0.5}" y="${top + 0.5}" width="${bw - 1}" height="${y - top - 1}" rx="6" class="fbox"/>` });
     y += 6;
   }
 
@@ -155,82 +184,91 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
 
   const items = (list: PullRequest[], indent: number, label: (pr: PullRequest) => string, trunks: number[]) => {
     for (const pr of list) {
-      for (const tx of trunks) out.push(trunk(y, y + 48, tx));
+      start(pr.url, prLabel(pr));
+      for (const tx of trunks) emit(trunk(y, y + 48, tx));
       const ix = PAD + indent;
-      out.push(icon(ICON.merge, ix, y + 8, 14, "merged"));
+      emit(icon(ICON.merge, ix, y + 8, 14, "merged"));
       const tx = ix + 24;
-      out.push(`<text x="${tx}" y="${y + 20}" class="ptitle">${x(truncate(pr.title, W - PAD - tx, 14))}</text>`);
-      out.push(meta(pr, label(pr), tx, y + 37));
+      emit(`<text x="${tx}" y="${y + 20}" class="ptitle">${x(truncate(pr.title, W - PAD - tx, 14))}</text>`);
+      emit(meta(pr, label(pr), tx, y + 37));
       y += 48;
     }
   };
-  const more = (n: number, indent: number, trunks: number[]) => {
+  const more = (n: number, indent: number, trunks: number[], scope: string) => {
     if (n <= 0) return;
-    for (const tx of trunks) out.push(trunk(y, y + 20, tx));
-    out.push(`<text x="${PAD + indent + 24}" y="${y + 14}" class="meta">+${n} more</text>`);
+    start(searchUrl(`${merged} ${scope}`), `${plural(n, "more PR")} (${scope.replace(/^\w+:/, "")})`);
+    for (const tx of trunks) emit(trunk(y, y + 20, tx));
+    emit(`<text x="${PAD + indent + 24}" y="${y + 14}" class="meta">+${n} more</text>`);
     y += 20;
   };
 
   y += 2;
   view.owners.forEach((o: ViewOwner) => {
-    out.push(avatar(o, PAD, y + 10));
     const count = plural(o.total, "PR");
-    out.push(`<text x="${PAD + 28}" y="${y + 25}" class="owner">${x(truncate(o.login, W - PAD * 2 - 28 - textWidth(count, 12) - 12, 14, true))}</text>`);
-    out.push(`<text x="${W - PAD}" y="${y + 25}" class="sub" text-anchor="end">${count}</text>`);
+    start(`https://github.com/${o.login}`, `${o.login}: ${count}`);
+    emit(avatar(o, PAD, y + 10));
+    emit(`<text x="${PAD + 28}" y="${y + 25}" class="owner">${x(truncate(o.login, W - PAD * 2 - 28 - textWidth(count, 12) - 12, 14, true))}</text>`);
+    emit(`<text x="${W - PAD}" y="${y + 25}" class="sub" text-anchor="end">${count}</text>`);
     y += 34;
     const t1 = PAD + 9.5;
     if (o.repos) {
       for (const r of o.repos) {
-        out.push(trunk(y, y + 26, t1));
-        out.push(icon(ICON.repo, PAD + 28, y + 7, 13, "mutedfill"));
         const stars = formatCount(r.stars);
-        const starsW = textWidth(stars, 12);
-        out.push(icon(ICON.star, W - PAD - starsW - 16, y + 8, 12, "mutedfill"));
-        out.push(`<text x="${W - PAD}" y="${y + 19}" class="sub" text-anchor="end">${stars}</text>`);
         const prs = `· ${plural(r.total, "PR")}`;
+        start(`https://github.com/${o.login}/${r.name}`, `${o.login}/${r.name}: ${stars} stars, ${plural(r.total, "PR")}`);
+        emit(trunk(y, y + 26, t1));
+        emit(icon(ICON.repo, PAD + 28, y + 7, 13, "mutedfill"));
+        const starsW = textWidth(stars, 12);
+        emit(icon(ICON.star, W - PAD - starsW - 16, y + 8, 12, "mutedfill"));
+        emit(`<text x="${W - PAD}" y="${y + 19}" class="sub" text-anchor="end">${stars}</text>`);
         const nameW = W - PAD - starsW - 28 - (PAD + 46) - textWidth(prs, 12) - 6;
-        out.push(`<text x="${PAD + 46}" y="${y + 19}" class="repo">${x(truncate(r.name, nameW, 13, true))}<tspan class="sub" dx="6">${prs}</tspan></text>`);
+        emit(`<text x="${PAD + 46}" y="${y + 19}" class="repo">${x(truncate(r.name, nameW, 13, true))}<tspan class="sub" dx="6">${prs}</tspan></text>`);
         y += 26;
         const t2 = PAD + 34.5;
         items(r.items, 48, (pr) => `#${pr.number}`, [t1, t2]);
-        more(r.hidden, 48, [t1, t2]);
+        more(r.hidden, 48, [t1, t2], `repo:${o.login}/${r.name}`);
       }
     } else {
       items(o.items ?? [], 28, (pr) => `${pr.owner}/${pr.repo}#${pr.number}`, [t1]);
-      more(o.hidden, 28, [t1]);
+      more(o.hidden, 28, [t1], `user:${o.login}`);
     }
     y += 4;
   });
 
   if (!view.owners.length && !view.featured.length) {
-    out.push(`<text x="${PAD}" y="${y + 18}" class="sub">No merged pull requests to show yet.</text>`);
+    emit(`<text x="${PAD}" y="${y + 18}" class="sub">No merged pull requests to show yet.</text>`);
     y += 30;
   }
 
   /* ---------- footer ---------- */
   const badges = view.cutOwners ? view.maxBadges : 0;
   if (view.cutOwners || view.since) {
+    const others = view.cutList.map((o) => `${o.login} (${o.total})`).join(", ");
+    const since = view.since ? `Since ${formatMonth(view.since)}` : "";
+    start(searchUrl(`${merged} -user:${view.user}`), [others && `Also contributed to ${others}`, since].filter(Boolean).join(". "));
     y += 4;
-    out.push(`<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" class="rule"/>`);
+    emit(`<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" class="rule"/>`);
     if (view.cutOwners) {
       const label = badges ? "Also contributed to" : `+${plural(view.cutOwners, "more owner")} · ${plural(view.cutPrs, "PR")}`;
-      out.push(`<text x="${PAD}" y="${y + 21}" class="sub">${label}</text>`);
+      emit(`<text x="${PAD}" y="${y + 21}" class="sub">${label}</text>`);
     }
-    if (view.since) {
-      out.push(`<text x="${W - PAD}" y="${y + 21}" class="sub" text-anchor="end">Since ${formatMonth(view.since)}</text>`);
-    }
+    if (since) emit(`<text x="${W - PAD}" y="${y + 21}" class="sub" text-anchor="end">${since}</text>`);
     y += 30;
     if (badges) {
       const chips = ownerChips(view.cutList.slice(0, badges), view.cutOwners - badges, avatar, SMALL_CHIP);
       const flowed = flow(chips, PAD, y, W - PAD * 2);
-      out.push(...flowed.svg);
+      emit(...flowed.svg);
       y = flowed.bottom + 8;
     }
   }
   y += 10;
+  segments.at(-1)!.y1 = y;
 
-  const H = Math.ceil(y);
-  const css = [
+  return { height: Math.ceil(y), segments, backgrounds, title: `${view.title}: ${sub}` };
+}
+
+function cardCss(t: Theme): string {
+  return [
     `text{font-family:${FONT};fill:${t.fg}}`,
     `.title{font-size:16px;font-weight:600;fill:${t.title}}`,
     `.sub,.meta{font-size:12px;fill:${t.muted}}`,
@@ -248,17 +286,55 @@ export function renderCard(view: CardView, { theme: t, avatars = new Map() }: Re
     `.fbox{fill:${t.featuredBg};stroke:${t.border}}`,
     chipCss(t, SMALL_CHIP),
   ].join("");
+}
 
+/** Wraps card content in an SVG whose viewport shows rows y0..y0+h of a card that is H tall. */
+function svgDoc(t: Theme, H: number, y0: number, h: number, title: string, defs: string[], body: string[]): string {
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="t">`,
-    `<title id="t">${x(`${view.title}: ${sub}`)}</title>`,
-    `<style>${css}</style>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${h}" viewBox="0 ${y0} ${W} ${h}" role="img" aria-labelledby="t">`,
+    `<title id="t">${x(title)}</title>`,
+    `<style>${cardCss(t)}</style>`,
     `<defs>${defs.join("")}</defs>`,
+    // The whole frame is drawn in every slice; the viewport crops it to the right edges and corners.
     `<rect x="0.5" y="0.5" width="${W - 1}" height="${H - 1}" rx="6" fill="${t.bg}" stroke="${t.border}"/>`,
-    ...out,
+    ...body,
     `</svg>`,
     "",
   ].join("\n");
+}
+
+/** The whole card as one SVG. */
+export function renderCard(view: CardView, { theme: t, avatars = new Map() }: RenderOptions): string {
+  const card = layoutCard(view, avatars);
+  return svgDoc(
+    t,
+    card.height,
+    0,
+    card.height,
+    card.title,
+    card.segments.flatMap((s) => s.defs),
+    [...card.backgrounds.map((b) => b.el), ...card.segments.flatMap((s) => s.els)],
+  );
+}
+
+export interface Slice {
+  svg: string;
+  href: string;
+  label: string;
+  height: number;
+}
+
+/**
+ * The card cut into horizontal bands, one SVG each, so every band can be wrapped in its own link
+ * in a README (an image inside a README can only link to one place).
+ */
+export function renderSlices(view: CardView, { theme: t, avatars = new Map() }: RenderOptions): Slice[] {
+  const card = layoutCard(view, avatars);
+  return card.segments.map((s) => {
+    const h = s.y1 - s.y0;
+    const bg = card.backgrounds.filter((b) => b.y0 < s.y1 && b.y1 > s.y0).map((b) => b.el);
+    return { svg: svgDoc(t, card.height, s.y0, h, s.label, s.defs, [...bg, ...s.els]), href: s.href, label: s.label, height: h };
+  });
 }
 
 interface ChipStyle {
