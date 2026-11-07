@@ -36,7 +36,8 @@ priority:
     my-favorite-org/website: -1
 
 # PRs to pin at the top, with an optional one-line note. They are always shown,
-# even if priority or since would hide them. (example values)
+# even if priority or since would hide them. They still count in their owner's and repo's
+# PR counts, and are listed last in those groups. (example values)
 featured:
   - pr: my-favorite-org/core#1234
     note: Rewrote the config loader; now used by every plugin.

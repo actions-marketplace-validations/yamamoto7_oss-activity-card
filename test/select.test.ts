@@ -73,13 +73,34 @@ test("repo priority orders repo headings", () => {
   assert.deepEqual(v.owners.find((o) => o.login === "honojs")!.repos?.map((r) => r.name), ["middleware", "hono"]);
 });
 
-test("featured PRs are listed once, at the top, with notes", () => {
+test("featured PRs are shown at the top with notes, and missing ones are skipped", () => {
   const v = view({ featured: [{ pr: "biomejs/biome#4410", note: "Autofix" }, { pr: "nobody/none#1" }] });
   assert.equal(v.featured.length, 1);
   assert.equal(v.featured[0]?.note, "Autofix");
-  const all = v.owners.flatMap((o) => o.items ?? o.repos!.flatMap((r) => r.items));
-  assert.ok(!all.some((p) => p.number === 4410));
   assert.equal(v.totalPrs, SAMPLE.length);
+});
+
+test("featured PRs still count toward their owner and repo, but are listed last", () => {
+  const featured = { featured: ["biomejs/biome#4410"], groups: { repos: false } };
+  const biome = (raw: Record<string, unknown>) => view(raw).owners.find((o) => o.login === "biomejs")!;
+
+  const limited = biome({ ...featured, groups: { repos: false, max_prs: 2 } });
+  assert.equal(limited.total, 5, "4410 is still counted");
+  assert.deepEqual(limited.items?.map((p) => p.number), [4302, 4120], "the newest PR is featured, so it makes room");
+  assert.equal(limited.hidden, 3);
+
+  const all = biome({ ...featured, groups: { repos: false, max_prs: 10 } });
+  assert.equal(all.items?.at(-1)?.number, 4410, "listed after the others when there is room");
+
+  const repo = view({ featured: ["biomejs/biome#4410"], groups: { max_prs: 10 } })
+    .owners.find((o) => o.login === "biomejs")!.repos!.find((r) => r.name === "biome")!;
+  assert.equal(repo.total, 4);
+  assert.equal(repo.items.at(-1)?.number, 4410);
+});
+
+test("featured PRs don't change how owners are ordered", () => {
+  const order = (raw: Record<string, unknown>) => view({ ...raw, groups: { max_owners: null } }).owners.map((o) => o.login);
+  assert.deepEqual(order({ featured: ["honojs/hono#3521"] }), order({}));
 });
 
 test("featured PRs fetched separately show even when hidden by priority", () => {

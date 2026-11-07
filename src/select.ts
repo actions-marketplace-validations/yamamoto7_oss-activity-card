@@ -6,12 +6,12 @@ const repoKey = (pr: Pick<PullRequest, "owner" | "repo">) => `${pr.owner}/${pr.r
 
 interface Group {
   key: string;
-  prs: PullRequest[]; // newest first
+  prs: PullRequest[]; // newest first, featured PRs last
   pri: number;
 }
 
 function sortGroups<T extends Group>(groups: T[], sort: Config["groups"]["sort"]): T[] {
-  const latest = (g: Group) => g.prs[0]?.mergedAt ?? "";
+  const latest = (g: Group) => g.prs.reduce((max, pr) => (pr.mergedAt > max ? pr.mergedAt : max), "");
   return groups.sort(
     (a, b) =>
       b.pri - a.pri ||
@@ -33,7 +33,8 @@ function isExcluded(pr: PullRequest, exclude: string[]): boolean {
  * - An owner's priority is `priority.owners[owner]`, falling back to `priority.default`.
  * - A repo is shown when `priority.repos[owner/repo]` (or, if unset, the owner's priority) is 0 or more.
  *   So a repo listed explicitly is shown even when its owner is hidden by `default: -1`.
- * - Featured PRs are always shown, in their own section, and are not repeated in the groups.
+ * - Featured PRs are always shown in their own section. They still count toward their owner and repo,
+ *   but are listed after the other PRs in the groups, so they only take a slot when there is room.
  */
 export function buildView(
   prs: PullRequest[],
@@ -74,10 +75,11 @@ export function buildView(
   for (const f of featured) if (f.pr.mergedAt) representedMap.set(prKey(f.pr), f.pr);
   const represented = [...representedMap.values()];
 
-  // Group what is left after featured PRs are pulled out.
+  // Featured PRs stay in the groups (and their counts) but go to the back of each list,
+  // newest first within each part. Repo lists are built from these, so they keep the order.
+  const listed = [...visible.filter((pr) => !featuredKeys.has(prKey(pr))), ...visible.filter((pr) => featuredKeys.has(prKey(pr)))];
   const byOwner = new Map<string, PullRequest[]>();
-  for (const pr of visible) {
-    if (featuredKeys.has(prKey(pr))) continue;
+  for (const pr of listed) {
     const k = pr.owner.toLowerCase();
     byOwner.set(k, [...(byOwner.get(k) ?? []), pr]);
   }

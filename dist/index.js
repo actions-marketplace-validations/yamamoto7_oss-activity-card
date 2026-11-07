@@ -7973,7 +7973,7 @@ var chipCss = (t, st) => [
 var prKey = (pr) => `${pr.owner}/${pr.repo}#${pr.number}`.toLowerCase();
 var repoKey = (pr) => `${pr.owner}/${pr.repo}`.toLowerCase();
 function sortGroups(groups, sort) {
-  const latest = (g) => g.prs[0]?.mergedAt ?? "";
+  const latest = (g) => g.prs.reduce((max, pr) => pr.mergedAt > max ? pr.mergedAt : max, "");
   return groups.sort(
     (a, b) => b.pri - a.pri || (sort === "count" ? b.prs.length - a.prs.length : 0) || latest(b).localeCompare(latest(a)) || a.key.localeCompare(b.key)
   );
@@ -8004,9 +8004,9 @@ function buildView(prs, featuredPrs, config, user) {
   for (const pr of visible) representedMap.set(prKey(pr), pr);
   for (const f of featured) if (f.pr.mergedAt) representedMap.set(prKey(f.pr), f.pr);
   const represented = [...representedMap.values()];
+  const listed = [...visible.filter((pr) => !featuredKeys.has(prKey(pr))), ...visible.filter((pr) => featuredKeys.has(prKey(pr)))];
   const byOwner = /* @__PURE__ */ new Map();
-  for (const pr of visible) {
-    if (featuredKeys.has(prKey(pr))) continue;
+  for (const pr of listed) {
     const k = pr.owner.toLowerCase();
     byOwner.set(k, [...byOwner.get(k) ?? [], pr]);
   }

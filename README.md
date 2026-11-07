@@ -106,7 +106,7 @@ By default, PRs under each owner are grouped by repository, and each heading sho
 
 ### Featured PRs
 
-`featured` PRs appear at the top of the card with an optional one-line note. They are always shown, even when `since`, `exclude` or `priority` would hide them, and they aren't repeated in the groups below. A featured PR doesn't have to be in your search results. It's looked up directly, so it can be any public PR.
+`featured` PRs appear at the top of the card with an optional one-line note. They are always shown, even when `since`, `exclude` or `priority` would hide them. They still count toward their owner's and repository's PR counts, and they are listed in the groups after the other PRs, so they only take one of the `max_prs` slots when there is room. Otherwise they are included in "+N more". A featured PR doesn't have to be in your search results. It's looked up directly, so it can be any public PR.
 
 ### `since`
 
