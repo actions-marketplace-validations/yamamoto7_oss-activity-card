@@ -88,7 +88,7 @@ test("slices cover the whole card, one link per band", () => {
   const slices = renderSlices(view, { theme: THEMES.light });
 
   assert.equal(slices.reduce((n, s) => n + s.height, 0), height(full));
-  assert.ok(slices.every((s) => s.height > 0));
+  assert.ok(slices.every((s) => s.height >= 24), "every row is at least one README text line tall");
   let y = 0;
   for (const s of slices) {
     assert.match(s.svg, new RegExp(`viewBox="0 ${y} 495 ${s.height}"`));

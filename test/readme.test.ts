@@ -12,7 +12,7 @@ test("block has one linked picture per slice, as a single HTML block", () => {
   assert.equal((block.match(/<a href=/g) ?? []).length, 2);
   assert.match(block, /<a href="https:\/\/github\.com\/a\/b\/pull\/1" title="a\/b#1: fix"><picture>/);
   assert.match(block, /srcset="oss-card\/01-dark\.svg"/);
-  assert.match(block, /<img src="oss-card\/02-light\.svg" alt="a\/b#1: fix" width="495" height="48">/);
+  assert.match(block, /<img src="oss-card\/02-light\.svg" alt="a\/b#1: fix" width="495" height="48" align="top">/);
   assert.match(block, /title="a &quot;quoted&quot; &amp; &lt;b&gt;"/);
   assert.ok(!/\n\s*\n/.test(block), "no blank lines, or Markdown would end the HTML block");
   assert.ok(block.startsWith("<div>") && block.endsWith("</div>"));

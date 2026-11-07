@@ -7656,7 +7656,7 @@ var END = "<!-- oss-card:end -->";
 var WIDTH = 495;
 function readmeBlock(slices) {
   const rows = slices.map(
-    (s) => `<a href="${escapeXml(s.href)}" title="${escapeXml(s.label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="${escapeXml(s.dark)}"><img src="${escapeXml(s.light)}" alt="${escapeXml(s.label)}" width="${WIDTH}" height="${s.height}"></picture></a>`
+    (s) => `<a href="${escapeXml(s.href)}" title="${escapeXml(s.label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="${escapeXml(s.dark)}"><img src="${escapeXml(s.light)}" alt="${escapeXml(s.label)}" width="${WIDTH}" height="${s.height}" align="top"></picture></a>`
   );
   return ["<div>", rows.join("<br>\n"), "</div>"].join("\n");
 }
@@ -7799,9 +7799,9 @@ function layoutCard(view, avatars) {
   const more = (n, indent, trunks, scope) => {
     if (n <= 0) return;
     start(searchUrl(`${merged} ${scope}`), `${plural(n, "more PR")} (${scope.replace(/^\w+:/, "")})`);
-    for (const tx of trunks) emit(trunk(y, y + 20, tx));
-    emit(`<text x="${PAD + indent + 24}" y="${y + 14}" class="meta">+${n} more</text>`);
-    y += 20;
+    for (const tx of trunks) emit(trunk(y, y + 24, tx));
+    emit(`<text x="${PAD + indent + 24}" y="${y + 16}" class="meta">+${n} more</text>`);
+    y += 24;
   };
   y += 2;
   view.owners.forEach((o) => {

@@ -23,7 +23,8 @@ export function readmeBlock(slices: LinkedSlice[]): string {
     (s) =>
       `<a href="${esc(s.href)}" title="${esc(s.label)}"><picture>` +
       `<source media="(prefers-color-scheme: dark)" srcset="${esc(s.dark)}">` +
-      `<img src="${esc(s.light)}" alt="${esc(s.label)}" width="${WIDTH}" height="${s.height}">` +
+      // align="top" drops the space a line of text keeps below its baseline, so rows touch.
+      `<img src="${esc(s.light)}" alt="${esc(s.label)}" width="${WIDTH}" height="${s.height}" align="top">` +
       `</picture></a>`,
   );
   return ["<div>", rows.join("<br>\n"), "</div>"].join("\n");
