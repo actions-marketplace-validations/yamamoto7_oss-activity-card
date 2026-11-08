@@ -178,6 +178,8 @@ Outputs: `path` and `path-dark`.
 
 ## Development
 
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 Requires Node.js 24.
 
 ```sh
