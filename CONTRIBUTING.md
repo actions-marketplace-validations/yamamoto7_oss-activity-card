@@ -2,8 +2,10 @@
 
 Thanks for helping with OSS Activity Card. Bug reports, ideas and pull requests are all welcome.
 
-## Issues
+## Issues and discussions
 
+- **Questions:** ask in [Discussions (Q&A)](https://github.com/yamamoto7/oss-activity-card/discussions/categories/q-a).
+- **Your card:** share it in [Show and tell](https://github.com/yamamoto7/oss-activity-card/discussions/categories/show-and-tell).
 - **Bugs:** use the bug report form. A link to where the card is shown helps the most, plus a screenshot for anything visual.
 - **Ideas:** use the feature request form. Say what you want to show on your profile, not only the option you have in mind.
 - Issues labeled [`good first issue`](https://github.com/yamamoto7/oss-activity-card/labels/good%20first%20issue) are a good place to start.

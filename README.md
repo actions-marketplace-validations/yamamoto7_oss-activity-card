@@ -61,6 +61,8 @@ That's it. The default `GITHUB_TOKEN` is enough, since only public data is read.
 
 To choose which owners come first, how many are shown, or which PRs are pinned at the top with a note, add [`examples/oss-card.yml`](examples/oss-card.yml) as `.github/oss-card.yml` and edit it. See [Configuration](#configuration). The workflow reruns whenever you change it. The same workflow with comments is in [`examples/workflow.yml`](examples/workflow.yml).
 
+Questions are welcome in [Discussions](https://github.com/yamamoto7/oss-activity-card/discussions/categories/q-a). Once your card is up, share it in [Show and tell](https://github.com/yamamoto7/oss-activity-card/discussions/categories/show-and-tell).
+
 ## How it works
 
 The action searches GitHub for your merged pull requests, renders the card as SVG files in light and dark themes, and writes them into your repository. The workflow then commits them.

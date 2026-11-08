@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Setup and configuration
-    url: https://github.com/yamamoto7/oss-activity-card#quick-start
-    about: The quick start and every config option are in the README.
+  - name: Questions
+    url: https://github.com/yamamoto7/oss-activity-card/discussions/categories/q-a
+    about: Ask how to set up or configure the card.
+  - name: Show your card
+    url: https://github.com/yamamoto7/oss-activity-card/discussions/categories/show-and-tell
+    about: Share your profile with the card. We'd love to see it.
