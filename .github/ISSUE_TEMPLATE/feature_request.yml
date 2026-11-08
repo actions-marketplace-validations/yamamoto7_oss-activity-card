@@ -1,0 +1,22 @@
+name: Feature request
+description: An idea for the card, the config, or the action.
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like the card to do?
+      description: What are you trying to show on your profile, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could it work?
+      description: A config example, sketch or screenshot of something similar is welcome.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to open a pull request for this.

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Setup and configuration
+    url: https://github.com/yamamoto7/oss-activity-card#quick-start
+    about: The quick start and every config option are in the README.
