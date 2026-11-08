@@ -1,5 +1,5 @@
 name: OSS Activity Card
-description: Render your merged pull requests to other people's repositories as an SVG card for your GitHub profile README.
+description: Show the pull requests you've had merged into other people's open source projects on your GitHub profile.
 author: yamamoto7
 branding:
   icon: git-merge
