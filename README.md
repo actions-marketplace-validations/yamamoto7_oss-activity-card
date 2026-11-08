@@ -1,5 +1,6 @@
 # OSS Activity Card
 
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-OSS%20Activity%20Card-8250df?logo=github)](https://github.com/marketplace/actions/oss-activity-card)
 [![Release](https://img.shields.io/github/v/release/yamamoto7/oss-activity-card)](https://github.com/yamamoto7/oss-activity-card/releases)
 [![License: MIT](https://img.shields.io/github/license/yamamoto7/oss-activity-card)](LICENSE)
 
