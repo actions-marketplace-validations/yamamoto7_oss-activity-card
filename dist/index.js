@@ -7900,8 +7900,9 @@ function cardCss(t) {
   ].join("");
 }
 function svgDoc(t, H, y0, h, title, defs, body) {
+  const fit = y0 === 0 && h === H ? "" : ` preserveAspectRatio="none"`;
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${h}" viewBox="0 ${y0} ${W} ${h}" role="img" aria-labelledby="t">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${h}" viewBox="0 ${y0} ${W} ${h}"${fit} role="img" aria-labelledby="t">`,
     `<title id="t">${escapeXml(title)}</title>`,
     `<style>${cardCss(t)}</style>`,
     `<defs>${defs.join("")}</defs>`,

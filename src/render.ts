@@ -299,8 +299,12 @@ function cardCss(t: Theme): string {
 
 /** Wraps card content in an SVG whose viewport shows rows y0..y0+h of a card that is H tall. */
 function svgDoc(t: Theme, H: number, y0: number, h: number, title: string, defs: string[], body: string[]): string {
+  // Slices must fill their box exactly. When a row is scaled down, WebKit (Safari, every iOS browser,
+  // the GitHub app) rounds its height, and the default aspect-ratio fitting would then shrink the
+  // content and center it, so rows would no longer line up. "none" keeps the width exact instead.
+  const fit = y0 === 0 && h === H ? "" : ` preserveAspectRatio="none"`;
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${h}" viewBox="0 ${y0} ${W} ${h}" role="img" aria-labelledby="t">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${h}" viewBox="0 ${y0} ${W} ${h}"${fit} role="img" aria-labelledby="t">`,
     `<title id="t">${x(title)}</title>`,
     `<style>${cardCss(t)}</style>`,
     `<defs>${defs.join("")}</defs>`,
